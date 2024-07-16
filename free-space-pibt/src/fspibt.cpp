@@ -1,6 +1,7 @@
-#include "fspibt.hpp"
 #include <algorithm>
 #include <unordered_set>
+
+#include "../include/fspibt.hpp"
 
 const std::string FSPIBT::SOLVER_NAME = "Free Space Priority Inheritance With Backtracking (FSPIBT)";
 

@@ -1,8 +1,7 @@
 #pragma once
 #include <getopt.h>
-
-#include "mapf_problem.hpp"
 #include "paths.hpp"
+#include "utils.hpp"
 #include "plan.hpp"
 #include <chrono>
 #include <functional>
@@ -136,8 +135,6 @@ public:
 class FreeSpaceMAPFSolver : public MinimumSolver
 {
 public:
-    int getLowerBoundSOC();
-    int getLowerBoundMakespan();
     int getLowerBoundSOC();
     int getLowerBoundMakespan();
     void makeLog(const std::string &logfile = "./result.txt");

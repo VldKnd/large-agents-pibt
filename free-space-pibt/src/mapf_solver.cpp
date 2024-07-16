@@ -1,11 +1,11 @@
 #include <iostream>
-#include "mapf_solver.hpp"
-#include "mapf_problem.hpp"
-#include "utils.hpp"
-#include "fspibt.hpp"
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <cmath>
+
+#include "../include/graph_utils.hpp"
+#include "../include/fspibt.hpp"
 
 MinimumSolver::MinimumSolver(MapfProblem* _P)
     : solver_name(""),

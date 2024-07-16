@@ -1,4 +1,3 @@
-#pragma once
 #include "mapf_solver.hpp"
 #include <unordered_set>
 

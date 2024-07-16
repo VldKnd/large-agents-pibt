@@ -1,4 +1,6 @@
-#include "plan.hpp"
+#include <iostream>
+#include "../include/plan.hpp"
+#include "../include/utils.hpp"
 
 Config Plan::get(const int t) const
 {

@@ -1,11 +1,12 @@
-#include "mapf_problem.hpp"
 
+#include <iostream>
 #include <fstream>
 #include <regex>
 #include <queue>
 #include <unordered_set>
 
-#include "utils.hpp"
+#include "../include/mapf_problem.hpp"
+#include "../include/graph_utils.hpp"
 
 MapfProblem::MapfProblem(std::string _instance, Graph *_G, std::mt19937 *_MT,
                  Config _config_s, Config _config_g, int _num_agents,
@@ -48,7 +49,7 @@ FreeSpaceMapfProblem::FreeSpaceMapfProblem(const std::string &_instance)
     // read instance file
     std::ifstream file(instance);
     if (!file) halt("file " + instance + " is not found.");
-
+    
     std::string line;
     std::smatch results;
     std::regex r_comment = std::regex(R"(#.+)");

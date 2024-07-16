@@ -1,4 +1,6 @@
-#include "paths.hpp"
+#include <iostream>
+
+#include "../include/paths.hpp"
 
 Paths::Paths(int num_agents) {
     std::vector<Path> tmp(num_agents, Path(0));
