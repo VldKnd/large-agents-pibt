@@ -2,7 +2,7 @@
 #include <getopt.h>
 
 #include "mapf_problem.hpp"
-#include "path.hpp"
+#include "paths.hpp"
 #include "plan.hpp"
 #include <chrono>
 #include <functional>
@@ -149,13 +149,13 @@ public:
     ~FreeSpaceMAPFSolver() override;
 
     // used for checking conflicts
-    void updateSizedPathTable(const PathesWithRadius &paths, const int id);
-    void clearSizedPathTable(const PathesWithRadius &paths);
-    void updateSizedPathTableWithoutClear(const int id, const PathesWithRadius &p,
-                                          const PathesWithRadius &paths);
+    void updateSizedPathTable(const PathsWithRadius &paths, const int id);
+    void clearSizedPathTable(const PathsWithRadius &paths);
+    void updateSizedPathTableWithoutClear(const int id, const PathWithRadius &path,
+                                          const PathsWithRadius &paths);
 
-    static PathesWithRadius planToSizedPaths(const Plan &plan);  // plan -> paths
-    static Plan sizedPathsToPlan(const PathesWithRadius &paths); // paths -> plan
+    static PathsWithRadius planToSizedPaths(const Plan &plan);  // plan -> paths
+    static Plan sizedPathsToPlan(const PathsWithRadius &paths); // paths -> plan
 
 protected:
     FreeSpaceMapfProblem *const P;
@@ -177,5 +177,5 @@ private:
 };
 
 std::unique_ptr<FreeSpaceMAPFSolver> getSolver(const std::string &solver_name,
-                                         FreeSpaceMapfProblem *P, bool verbose, int argc,
-                                         char *argv[]);
+                                               FreeSpaceMapfProblem *P, bool verbose, int argc,
+                                               char *argv[]);

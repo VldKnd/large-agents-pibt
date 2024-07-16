@@ -5,10 +5,10 @@
 #include <iostream>
 #include <mapf_problem.hpp>
 #include <mapf_solver.hpp>
-#include <utils.hpp>
 #include <getopt.h>
 #include <random>
 #include <vector>
+
 
 int main(int argc, char *argv[])
 {
@@ -126,27 +126,4 @@ int main(int argc, char *argv[])
   }
 
   return 0;
-}
-
-std::unique_ptr<FreeSpaceMAPFSolver> getSolver(const std::string &solver_name,
-                                         FreeSpaceMapfProblem *P, bool verbose, int argc,
-                                         char *argv[])
-{
-  std::unique_ptr<FreeSpaceMAPFSolver> solver;
-  if (solver_name == "FSPIBT")
-  {
-    solver = std::make_unique<FSPIBT>(P);
-  }
-  else
-  {
-    std::cout << "warn@mapf: "
-              << "unknown solver name, " << solver_name
-              << ", availible options are ['FSPIBT']."
-              << std::endl;
-    return 1;
-  }
-
-  solver->setParams(argc, argv);
-  solver->setVerbose(verbose);
-  return solver;
 }
