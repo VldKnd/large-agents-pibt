@@ -10,10 +10,6 @@
 #include <random>
 #include <vector>
 
-std::unique_ptr<FSMAPF_Solver> getSolver(const std::string &solver_name,
-                                         FSMAPF_Instance *P, bool verbose, int argc,
-                                         char *argv[]);
-
 int main(int argc, char *argv[])
 {
   std::string instance_file;
@@ -85,7 +81,7 @@ int main(int argc, char *argv[])
   }
 
   //  set problem
-  auto P = FSMAPF_Instance(instance_file);
+  auto P = FreeSpaceMapfProblem(instance_file);
 
   // set max computation time (otherwise, use param in instance_file)
   if (max_comp_time != -1)
@@ -132,36 +128,25 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-std::unique_ptr<FSMAPF_Solver> getSolver(const std::string &solver_name,
-                                         FSMAPF_Instance *P, bool verbose, int argc,
+std::unique_ptr<FreeSpaceMAPFSolver> getSolver(const std::string &solver_name,
+                                         FreeSpaceMapfProblem *P, bool verbose, int argc,
                                          char *argv[])
 {
-  std::unique_ptr<FSMAPF_Solver> solver;
+  std::unique_ptr<FreeSpaceMAPFSolver> solver;
   if (solver_name == "FSPIBT")
   {
     solver = std::make_unique<FSPIBT>(P);
   }
-  else if (solver_name == "FSHCA")
-  {
-    solver = std::make_unique<FSHCA>(P);
-  }
   else
   {
     std::cout << "warn@mapf: "
-              << "unknown solver name, " << solver_name << " continue by Free Space PIBT"
+              << "unknown solver name, " << solver_name
+              << ", availible options are ['FSPIBT']."
               << std::endl;
-    solver = std::make_unique<FSPIBT>(P);
+    return 1;
   }
 
   solver->setParams(argc, argv);
   solver->setVerbose(verbose);
   return solver;
 }
-
-
-[submodule "third_party/grid-pathfinding"]
-	path = third_party/grid-pathfinding
-	url = https://github.com/Kei18/grid-pathfinding.git
-[submodule "third_party/googletest"]
-	path = third_party/googletest
-	url = https://github.com/google/googletest.git

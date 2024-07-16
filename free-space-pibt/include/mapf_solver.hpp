@@ -1,6 +1,7 @@
 #pragma once
 #include <getopt.h>
 
+#include "mapf_problem.hpp"
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -115,7 +116,7 @@ protected:
     virtual void exec() {}; // main
 
 public:
-    MinimumSolver(Problem *_P);
+    MinimumSolver(MapfProblem *_P);
     virtual ~MinimumSolver() {};
 
     // getter
@@ -130,7 +131,7 @@ public:
 // -----------------------------------------------
 // base class for Free Space Agent
 // -----------------------------------------------
-class FSMAPF_Solver : public MinimumSolver
+class FreeSpaceMAPFSolver : public MinimumSolver
 {
 public:
     int getLowerBoundSOC();
@@ -142,8 +143,8 @@ public:
     int pathDist(int i, Node *s) const;
     int pathDist(int i) const;
     void createDistanceTable();
-    explicit FSMAPF_Solver(FSMAPF_Instance *P);
-    ~FSMAPF_Solver() override;
+    explicit FreeSpaceMAPFSolver(FreeSpaceMapfProblem *P);
+    ~FreeSpaceMAPFSolver() override;
 
     // used for checking conflicts
     void updateSizedPathTable(const SizedPaths &paths, const int id);
@@ -155,7 +156,7 @@ public:
     static Plan sizedPathsToPlan(const SizedPaths &paths); // paths -> plan
 
 protected:
-    FSMAPF_Instance *const P;
+    FreeSpaceMapfProblem *const P;
     using DistanceTable = std::vector<std::vector<int>>;
     DistanceTable distance_table;
     DistanceTable *distance_table_p;
@@ -173,6 +174,6 @@ private:
     void computeLowerBounds();
 };
 
-std::unique_ptr<FSMAPF_Solver> getSolver(const std::string &solver_name,
-                                         FSMAPF_Instance *P, bool verbose, int argc,
+std::unique_ptr<FreeSpaceMAPFSolver> getSolver(const std::string &solver_name,
+                                         FreeSpaceMapfProblem *P, bool verbose, int argc,
                                          char *argv[]);
