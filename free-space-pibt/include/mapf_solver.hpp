@@ -2,6 +2,8 @@
 #include <getopt.h>
 
 #include "mapf_problem.hpp"
+#include "path.hpp"
+#include "plan.hpp"
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -147,13 +149,13 @@ public:
     ~FreeSpaceMAPFSolver() override;
 
     // used for checking conflicts
-    void updateSizedPathTable(const SizedPaths &paths, const int id);
-    void clearSizedPathTable(const SizedPaths &paths);
-    void updateSizedPathTableWithoutClear(const int id, const SizedPath &p,
-                                          const SizedPaths &paths);
+    void updateSizedPathTable(const PathesWithRadius &paths, const int id);
+    void clearSizedPathTable(const PathesWithRadius &paths);
+    void updateSizedPathTableWithoutClear(const int id, const PathesWithRadius &p,
+                                          const PathesWithRadius &paths);
 
-    static SizedPaths planToSizedPaths(const Plan &plan);  // plan -> paths
-    static Plan sizedPathsToPlan(const SizedPaths &paths); // paths -> plan
+    static PathesWithRadius planToSizedPaths(const Plan &plan);  // plan -> paths
+    static Plan sizedPathsToPlan(const PathesWithRadius &paths); // paths -> plan
 
 protected:
     FreeSpaceMapfProblem *const P;
