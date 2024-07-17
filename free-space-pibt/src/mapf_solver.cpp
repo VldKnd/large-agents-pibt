@@ -101,12 +101,8 @@ void FreeSpaceMAPFSolver::createDistanceTable(){
     Grid* grid = reinterpret_cast<Grid*>(G);
 
     for (int i = 0; i < P->getNum(); ++i) {
-        // breadth first search
         std::queue<Node*> OPEN;
         Node* n = P->getGoal(i);
-//        int g_x = n->id % grid->getWidth();
-//        int g_y = std::floor( n->id / grid->getWidth());
-
         float r = P->getRadius(i);
         OPEN.push(n);
         distance_table[i][n->id] = 0;

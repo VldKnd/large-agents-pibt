@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <random>
+#include <chrono>
 
 using Time = std::chrono::steady_clock;
 
