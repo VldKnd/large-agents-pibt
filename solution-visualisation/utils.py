@@ -28,12 +28,12 @@ def BFS(text, start_i, start_j):
     
     while len(q) > 0:
         i, j = q.pop()
-        for x, y in [(0, 1), (0, -1), 
-                     (-1, 0), (1, 0), 
-                     (-1, -1), (1, 1), 
+        for x, y in [(0, 1), (0, -1),
+                     (-1, 0), (1, 0),
+                     (-1, -1), (1, 1),
                      (-1, 1), (1, -1)]:
             try:
-                if i+x >= 0 and j+y >= 0:  
+                if i+x >= 0 and j+y >= 0:
                     if text[i+x][j+y] != "." and text[i+x][j+y] != "X":
                         q.append((i+x, j+y))
 

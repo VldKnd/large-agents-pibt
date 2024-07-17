@@ -1,14 +1,13 @@
-from matplotlib import collections
-from matplotlib import animation
-import matplotlib.pyplot as plt
-from utils import parse_tuples
-from calendar import c
-from gc import collect
-import numpy as np
 import argparse
 import math
 import os
+from calendar import c
+from gc import collect
 
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import animation, collections
+from utils import parse_tuples
 
 if True:
     parser = argparse.ArgumentParser(
@@ -136,13 +135,13 @@ map_colors = (0, 0, 0, 1)
 
 if colorful:
     agents_colors = np.append(
-        np.random.rand(coordinates.shape[1], 3), 
-        np.ones((coordinates.shape[1], 1)), 
+        np.random.rand(coordinates.shape[1], 3),
+        np.ones((coordinates.shape[1], 1)),
     axis=1)
 else:
     agents_colors = np.append(
-        np.zeros((coordinates.shape[1], 3)), 
-        np.ones((coordinates.shape[1], 1)), 
+        np.zeros((coordinates.shape[1], 3)),
+        np.ones((coordinates.shape[1], 1)),
     axis=1)
     
 if time_steps_at_the_end:
@@ -175,8 +174,8 @@ if args.title:
 obstacle_size = int((figure_size[0]/( max_x - min_x + 4 ))*72)
 obstacle_marker = None
 
-starts_scatter = ax.scatter(starts[:, 0], starts[:, 1], marker="+", color=agents_colors, s=12, zorder = 2)
-goals_scatter = ax.scatter(goals[:, 0], goals[:, 1], marker="x", color=agents_colors, s=12, zorder = 2)
+# starts_scatter = ax.scatter(starts[:, 0], starts[:, 1], marker="+", color=agents_colors, s=12, zorder = 2)
+# goals_scatter = ax.scatter(goals[:, 0], goals[:, 1], marker="x", color=agents_colors, s=12, zorder = 2)
 
 obj_col = collections.PatchCollection([
     plt.Rectangle(pos, 1, 1) for pos in coordinates_map - 0.5
