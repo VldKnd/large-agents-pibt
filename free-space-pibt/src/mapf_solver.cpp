@@ -6,6 +6,7 @@
 
 #include "../include/graph_utils.hpp"
 #include "../include/fspibt.hpp"
+#include "../include/osfspibt.hpp"
 
 MinimumSolver::MinimumSolver(MapfProblem* _P)
     : solver_name(""),
@@ -316,12 +317,15 @@ std::unique_ptr<FreeSpaceMAPFSolver> getSolver(const std::string &solver_name,
     if (solver_name == "FSPIBT")
     {
         solver = std::make_unique<FSPIBT>(P);
+    } else if (solver_name == "OSFSPIBT")
+    {
+        solver = std::make_unique<OSFSPIBT>(P);
     }
     else
     {
         std::cout << "warn@mapf: "
                   << "unknown solver name, " << solver_name
-                  << ", availible options are ['FSPIBT']."
+                  << ", availible options are ['FSPIBT', 'OSFSPIBT]."
                   << std::endl;
         exit(1);
     }

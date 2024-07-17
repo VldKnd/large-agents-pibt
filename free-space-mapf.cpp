@@ -1,6 +1,5 @@
 #include <getopt.h>
 
-#include <fspibt.hpp>
 #include <default_params.hpp>
 #include <iostream>
 #include <mapf_problem.hpp>

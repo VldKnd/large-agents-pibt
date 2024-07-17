@@ -1,12 +1,12 @@
-from calendar import c
-from gc import collect
-from matplotlib import animation
-import matplotlib.pyplot as plt
-from matplotlib import collections
-from utils import parse_tuples
-import numpy as np
 import argparse
 import os
+from calendar import c
+from gc import collect
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import animation, collections
+from utils import parse_tuples
 
 if False:
     parser = argparse.ArgumentParser(
@@ -64,7 +64,7 @@ not_keys = [
     'makespan',
     'lb_makespan',
     'comp_time',
-    'preprocessing_comp_time',   
+    'preprocessing_comp_time',
 ]
 
 map_name = instance['map_file']
@@ -93,13 +93,13 @@ map_colors = (0, 0, 0, 1)
 
 if colorful:
     agents_colors = np.append(
-        np.random.rand(starts.shape[0], 3), 
-        np.ones((starts.shape[0], 1)), 
+        np.random.rand(starts.shape[0], 3),
+        np.ones((starts.shape[0], 1)),
     axis=1)
 else:
     agents_colors = np.append(
-        np.zeros((starts.shape[0], 3)), 
-        np.ones((starts.shape[0], 1)), 
+        np.zeros((starts.shape[0], 3)),
+        np.ones((starts.shape[0], 1)),
     axis=1)
 
 min_x, min_y = np.stack([coordinates_map.min(0),  starts.min(0), goals.min(0)]).min(0)
