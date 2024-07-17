@@ -171,10 +171,10 @@ bool OSFSPIBT::inheritanceConflict(Agent *agent, const Agents &A)
 
 bool OSFSPIBT::funcOSFSPIBT(Agent *child_agent, Agent *parent_agent, const Agents &A)
 {
-    auto compareToEvadeInheritanceConflict = [&, parent_agent](Node *node_lhs, Node *node_rhs)
+    auto compareToEvadeInheritanceConflict = [&, child_agent](Node *node_lhs, Node *node_rhs)
     {
-        auto distance_node_lhs = parent_agent->v_now->euclideanDist(node_lhs);
-        auto distance_node_rhs = parent_agent->v_now->euclideanDist(node_rhs);
+        auto distance_node_lhs = child_agent->g->euclideanDist(node_lhs);
+        auto distance_node_rhs = child_agent->g->euclideanDist(node_rhs);
         return distance_node_lhs < distance_node_rhs;
     };
 
