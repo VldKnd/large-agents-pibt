@@ -1,5 +1,8 @@
 #include <algorithm>
+#include <map>
+#include <exception>
 #include <unordered_set>
+
 
 #include "../include/fspibt_v2.hpp"
 
@@ -7,7 +10,7 @@ const std::string FSPIBTV2::SOLVER_NAME = "Free Space Priority Inheritance With 
 
 FSPIBTV2::FSPIBTV2(FreeSpaceMapfProblem *problem)
     : FreeSpaceMAPFSolver(problem),
-      setOfAgentsInConflict()
+      setOfAgentIdsInConflict()
 {
     solver_name = FSPIBTV2::SOLVER_NAME;
 }
@@ -39,8 +42,7 @@ void FSPIBTV2::run()
 
         auto *agent = new Agent{
             i,                        // id
-            P->getStart(i),           // current location
-            {},                       // List of next locations
+            {P->getStart(i)},         // List of next locations
             g,                        // goal
             0,                        // eta
             d,                        // initial distance
@@ -53,6 +55,7 @@ void FSPIBTV2::run()
     solution.add(P->getConfigStart());
 
     int timestep = 0;
+
     while (true)
     {
         ++timestep;
@@ -62,7 +65,7 @@ void FSPIBTV2::run()
 
         for (auto agent : allAgents)
         {
-            if (agent->planned_path->empty())
+            if ((agent->path).size() == 1) // run if its just { v_t0 }
                 funcFSPIBTV2(agent, allAgents);
         }
 
@@ -72,12 +75,11 @@ void FSPIBTV2::run()
 
         for (auto agent : allAgents)
         {
-            Node *agents_next_node = agent->planned_path->front();
+            Node *agents_next_node = *((agent->path).begin() + 1);
             bool elapsed = (agents_next_node == agent->goal);
 
             configuration[agent->id] = agents_next_node;
-            agent->v_now = agents_next_node;
-            agent->planned_path->pop_front();
+            (agent->path).pop_front();
 
             agent->elapsed = elapsed ? 0 : agent->elapsed + 1;
             check_goal_condition &= elapsed;
@@ -102,11 +104,11 @@ void FSPIBTV2::run()
         delete a;
 }
 
-void FSPIBTV2::funcFSPIBTV2(Agent *agent, const std::vector<Agent *> &A)
+void FSPIBTV2::funcFSPIBTV2(Agent *agent, const std::vector<Agent *> &allAgents)
 {
-    if (agent->goal == agent->v_now)
+    if (agent->goal == (agent->path).back())
     {
-        agent->planned_path->push_back(agent->v_now);
+        (agent->path).push_back((agent->path).back());
         return;
     }
 
@@ -117,7 +119,7 @@ void FSPIBTV2::funcFSPIBTV2(Agent *agent, const std::vector<Agent *> &A)
         return distance_node_lhs < distance_node_rhs;
     };
 
-    std::vector<Node *> current_nodes_neighbours = agent->v_now->neighbor;
+    std::vector<Node*> current_nodes_neighbours = (agent->path).back()->neighbor;
     std::sort(current_nodes_neighbours.begin(), current_nodes_neighbours.end(), closestNodeToTheGoal);
 
     for (auto perpective_next_node : current_nodes_neighbours)
@@ -125,26 +127,25 @@ void FSPIBTV2::funcFSPIBTV2(Agent *agent, const std::vector<Agent *> &A)
         if (pathDist(agent->id, perpective_next_node) == max_timestep + 1)
             continue;
 
-        agent->planned_path->push_back(perpective_next_node);
+        (agent->path).push_back(perpective_next_node);
 
-        if (collisionConflict(agent, A))
+
+        if (collisionConflict(agent, allAgents))
         {
-            agent->planned_path->pop_back();
+            (agent->path).pop_back();
             continue;
         }
 
-
-        // ### CONTINUE HERE! When does the inheritance of confilct should occure? Right before the agent meets other in the future? Or for all the timesteps?
-        if (inheritanceConflict(agent, A))
+        if (inheritanceConflict(agent, allAgents))
         {
-            agent->planned_path->pop_back();
+            (agent->path).pop_back();
             continue;
         }
 
         return;
     }
 
-    agent->planned_path->push_front(agent->v_now);
+    (agent->path).push_back((agent->path).back());
 }
 
 bool FSPIBTV2::collisionConflict(Agent *agent, const std::vector<Agent *> &allAgents)
@@ -153,11 +154,20 @@ bool FSPIBTV2::collisionConflict(Agent *agent, const std::vector<Agent *> &allAg
     {
         if (
             other_agent->id != agent->id &&
-            other_agent->planned_path->size() >= agent->planned_path->size())
+            (other_agent->path).size() >= (agent->path).size())
         {
-            for (auto node_in_planned_path = (*(other_agent->planned_path)).begin() + (agent->planned_path->size() - 1); node_in_planned_path != (*(other_agent->planned_path)).end();)
+            int isConflictingAgent = setOfAgentIdsInConflict.contains(other_agent);
+
+            for (
+                auto node_in_other_agents_path = (other_agent->path).begin() + ((agent->path).size() - 1);
+                node_in_other_agents_path != (other_agent->path).end() - isConflictingAgent;
+                /// The - isConflictingAgent is needed, since all the agents in the conflict are waiting for it to escape the inheritance conflict.
+                /// So each step it takes will make everyone else wait one extra step up to when it escapes.
+                /// The step it escapes, it will free the possible space of confict with previous agent, so the agent that has initiated the search will be able to make a step.
+                /// For it to not block other agetns it has to escape to place, where there is no conflict with intention of any agent.
+                node_in_other_agents_path++)
             {
-                if ((*node_in_planned_path)->euclideanDist(agent->planned_path->front()) < agent->radius + other_agent->radius)
+                if ((*node_in_other_agents_path)->euclideanDist((agent->path).back()) < agent->radius + other_agent->radius)
                     return true;
             }
         }
@@ -165,122 +175,263 @@ bool FSPIBTV2::collisionConflict(Agent *agent, const std::vector<Agent *> &allAg
     return false;
 }
 
-
-// ### CONTINUE HERE!
 bool FSPIBTV2::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAgents)
 {
-    for (auto other_agent : allAgents)
-    {
+    setOfAgentIdsInConflict.insert(agent);
+    std::vector<std::tuple<Agent*, int>> vector_of_agents_and_agents_steps_during_iheritance = {};
+
+    auto agent_iterator = allAgents.begin();
+    while (agent_iterator != allAgents.end()) {
+        Agent* other_agent = *agent_iterator;
+        agent_iterator++;
         if (
             other_agent->id != agent->id &&
-            !other_agent->v_next &&
-            other_agent->v_now->euclideanDist(agent->v_next) < agent->r + other_agent->r &&
-            !funcFSPIBTV2(other_agent, agent, A))
-            return true;
+            (other_agent->path).size() < (agent->path).size() &&
+            (other_agent->path).back()->euclideanDist((agent->path).back()) < agent->radius + other_agent->radius)
+        {
+            int numberOfStepsDuringIheritanceConflict = solveInheritanceConflict(other_agent, allAgents);
+
+            if (numberOfStepsDuringIheritanceConflict != 0){
+                vector_of_agents_and_agents_steps_during_iheritance.push_back({
+                    other_agent,
+                    numberOfStepsDuringIheritanceConflict
+                });
+            } else {
+                while (vector_of_agents_and_agents_steps_during_iheritance.size()) {
+                    std::tuple<Agent*, int> agents_and_agents_steps_during_iheritance = \
+                    vector_of_agents_and_agents_steps_during_iheritance.back();
+                    vector_of_agents_and_agents_steps_during_iheritance.pop_back();
+                    Agent* agent_in_iheritance_conflict = std::get<0>(agents_and_agents_steps_during_iheritance);
+                    int agents_steps_during_iheritance = std::get<1>(agents_and_agents_steps_during_iheritance);
+
+                    for(int i = agents_steps_during_iheritance; i--;) {
+                        (agent_in_iheritance_conflict->path).pop_back();
+                        for (auto agent_in_conflict : setOfAgentIdsInConflict) {
+                            (agent_in_conflict->path).erase((agent_in_conflict->path).end() - 2);
+                        }
+                    }
+                }
+
+                setOfAgentIdsInConflict.erase(agent);
+                return true;
+            }
+        }
     }
+
+    setOfAgentIdsInConflict.erase(agent);
     return false;
 }
 
-bool FSPIBTV2::funcFSPIBTV2(Agent *child_agent, Agent *parent_agent, const Agents &A)
+int FSPIBTV2::solveInheritanceConflict(Agent *agent, const std::vector<Agent *> &allAgents)
 {
-    auto compareToEvadeInheritanceConflict = [&, child_agent](Node *node_lhs, Node *node_rhs)
+    if (setOfAgentIdsInConflict.size() > 5)
+        return 0;
+
+    auto compareToReachGoal = [&, agent](Node *const v, Node *const u)
     {
-        auto distance_node_lhs = child_agent->g->euclideanDist(node_lhs);
-        auto distance_node_rhs = child_agent->g->euclideanDist(node_rhs);
-        return distance_node_lhs < distance_node_rhs;
+        auto d_v = (agent->path).back()->euclideanDist(v);
+        auto d_u = (agent->path).back()->euclideanDist(u);
+        return d_v < d_u;
     };
 
-    Nodes C = getNodesToAvoidInheritanceConflict(child_agent, parent_agent);
-    std::sort(C.begin(), C.end(), compareToEvadeInheritanceConflict);
+    Nodes nodesOutsideOfCurrentInheritanceConflict = getNodesToAvoidInheritanceConflict(agent, allAgents);
+    std::sort(
+        nodesOutsideOfCurrentInheritanceConflict.begin(),
+        nodesOutsideOfCurrentInheritanceConflict.end(),
+        compareToReachGoal
+    );
 
-    for (Node *node : C)
+
+    std::unordered_set<int> ids_of_visited_nodes = {};
+    bool next_node_found_during_greedy_bfs = false;
+    int counter_of_steps_made = 0;
+
+    for (auto node_to_reach : nodesOutsideOfCurrentInheritanceConflict)
     {
-
-        if (pathDist(child_agent->id, node) == max_timestep + 1)
+        if (
+            pathDist(agent->id, node_to_reach) == max_timestep + 1 ||
+            getRandomFloat(0., 1, MT) < 0.8 /// Is needed to prevent deadlocks
+        )
         {
             continue;
         }
 
-        auto compareLocal = [node](const Node *a, const Node *b)
+        counter_of_steps_made = 0;
+        ids_of_visited_nodes.clear();
+        ids_of_visited_nodes.insert((agent->path).back()->id);
+
+        auto compareLocal = [node_to_reach](const Node *node_lhs, const Node *node_rhs)
         {
-            float d_a = node->euclideanDist(a);
-            float d_b = node->euclideanDist(b);
-            return d_a < d_b;
+            float distance_node_lhs = node_to_reach->euclideanDist(node_lhs);
+            float distance_node_rhs = node_to_reach->euclideanDist(node_rhs);
+            return distance_node_lhs < distance_node_rhs;
         };
 
-        Nodes neighbors = child_agent->v_now->neighbor;
-        std::sort(neighbors.begin(), neighbors.end(), compareLocal);
-
-        auto find = std::find_if(neighbors.begin(), neighbors.end(),
-                                 [&, child_agent, parent_agent](Node *node)
-                                 {
-                                     return parent_agent->v_now->euclideanDist(node) > child_agent->r + parent_agent->r &&
-                                            checkIfNodeExistInRadiusOnGrid(G, node->pos.x, node->pos.y, child_agent->r);
-                                 });
-
-        if (find == neighbors.end())
-            continue;
-
-        child_agent->v_next = *find;
-
-        if (collisionConflict(A, child_agent, parent_agent))
+        while ((agent->path).back()->id != node_to_reach->id)
         {
-            child_agent->v_next = nullptr;
-            continue;
+            next_node_found_during_greedy_bfs = false;
+            Nodes neighbours = (agent->path).back()->neighbor;
+            std::sort(neighbours.begin(), neighbours.end(), compareLocal);
+
+            for (auto neighbour_node : neighbours) {
+                if (
+                    ids_of_visited_nodes.find(neighbour_node->id) != ids_of_visited_nodes.end() ||
+                    !checkIfNodeExistInRadiusOnGrid(G, neighbour_node->pos.x, neighbour_node->pos.y, agent->radius)
+                ) {
+                    continue;
+
+                }
+
+                (agent->path).push_back(neighbour_node);
+                for (auto agent : setOfAgentIdsInConflict) {
+                    Node* second_to_last_element = *((agent->path).end() - 2);
+                    (agent->path).insert(
+                        (agent->path).end() - 1,
+                        second_to_last_element
+                    );
+                }
+
+                if (collisionConflict(agent, allAgents))
+                {
+                    ids_of_visited_nodes.insert(neighbour_node->id);
+                    (agent->path).pop_back();
+                    for (auto agent : setOfAgentIdsInConflict) {
+                        (agent->path).erase((agent->path).end() - 2);
+                    }
+                    continue;
+                }
+
+                if (inheritanceConflict(agent, allAgents))
+                {
+                    ids_of_visited_nodes.insert(neighbour_node->id);
+                    (agent->path).pop_back();
+                    for (auto agent : setOfAgentIdsInConflict) {
+                        (agent->path).erase((agent->path).end() - 2);
+                    }
+                    continue;
+                }
+
+                ids_of_visited_nodes.insert(neighbour_node->id);
+                next_node_found_during_greedy_bfs = true;
+                counter_of_steps_made++;
+                break;
+            }
+
+            if (!next_node_found_during_greedy_bfs || counter_of_steps_made > 5 * setOfAgentIdsInConflict.size()) {
+                for(int i = counter_of_steps_made; i--;) {
+                    (agent->path).pop_back();
+                    for (auto agent_in_conflict : setOfAgentIdsInConflict) {
+                        (agent_in_conflict->path).erase((agent_in_conflict->path).end() - 2);
+                    }
+                }
+                break;
+            }
         }
 
-        if (inheritanceConflict(child_agent, A))
-        {
-            child_agent->v_next = nullptr;
-            continue;
+        if ((agent->path).back()->id == node_to_reach->id) {
+            return counter_of_steps_made;
         }
-
-        parent_agent->v_next = parent_agent->v_now;
-        return true;
     }
 
-    return false;
+    return 0;
 }
 
-Nodes FSPIBTV2::getNodesToAvoidInheritanceConflict(const Agent *a_child, const Agent *a_parent)
-{
-    int x = (a_parent->v_next->pos).x;
-    int y = (a_parent->v_next->pos).y;
-    double r = a_child->r + a_parent->r;
-    int dx = std::ceil(r);
-    int dy = 0;
-    Nodes nodes;
-
-    do
-    {
-        if (G->existNode(x + dx, y + dy))
-            nodes.push_back(G->getNode(x + dx, y + dy));
-        if (G->existNode(x - dy, y + dx))
-            nodes.push_back(G->getNode(x - dy, y + dx));
-        if (G->existNode(x - dx, y - dy))
-            nodes.push_back(G->getNode(x - dx, y - dy));
-        if (G->existNode(x + dy, y - dx))
-            nodes.push_back(G->getNode(x + dy, y - dx));
-        if ((dx - 1) * (dx - 1) + dy * dy > r * r)
-            --dx;
-        else
-            ++dy;
-    } while (dx != 0);
-
-    return nodes;
+void updateMinMaxMap(int key, int value, std::map<int, std::tuple<int, int>>* dictionary) {
+    if (dictionary->find(key) == dictionary->end()) {
+        (*dictionary)[key] = std::tuple<int, int>({ value, value });
+    } else {
+        std::get<0>(dictionary->at(key)) = std::min<int>(std::get<0>(dictionary->at(key)), value);
+        std::get<1>(dictionary->at(key)) = std::max<int>(std::get<1>(dictionary->at(key)), value);
+    }
 }
 
-bool FSPIBTV2::collisionConflict(const Agents &A, Agent *a_child, Agent *a_parent)
+Nodes FSPIBTV2::getNodesToAvoidInheritanceConflict(const Agent *child_agent, const std::vector<Agent *> &allAgents)
 {
-    for (auto agent : A)
-    {
-        if (agent->id != a_child->id &&
-            agent->id != a_parent->id &&
-            agent->v_next &&
-            agent->v_next->euclideanDist(a_child->v_next) < a_child->r + agent->r)
+    // outerBorder[x] = <min_y, max_y>; for each x min and max y values outside of conflict.
+    std::map<int, std::tuple<int, int>> outerBorderX = {};
+
+    // outerBorder[y] = <min_x, max_x>; for each y min and max x values outside of conflict.
+    std::map<int, std::tuple<int, int>> outerBorderY = {};
+
+    for (auto conflicting_agent : setOfAgentIdsInConflict){
+
+        int x = ((conflicting_agent->path).back()->pos).x;
+        int y = ((conflicting_agent->path).back()->pos).y;
+
+        double r = child_agent->radius + conflicting_agent->radius;
+        int dx = std::ceil(r + 1e-3);
+        int dy = 0;
+
+        do
         {
+            if (G->existNode(x + dx, y + dy)) {
+                updateMinMaxMap(x + dx, y + dy, &outerBorderX);
+                updateMinMaxMap(y + dy, x + dx, &outerBorderY);
+            }
+
+            if (G->existNode(x - dx, y + dy)) {
+                updateMinMaxMap(x - dx, y + dy, &outerBorderX);
+                updateMinMaxMap(y + dy, x - dx, &outerBorderY);
+            }
+
+            if (G->existNode(x - dx, y - dy)) {
+                updateMinMaxMap(x - dx, y - dy, &outerBorderX);
+                updateMinMaxMap(y - dy, x - dx, &outerBorderY);
+            }
+
+            if (G->existNode(x + dx, y - dy)) {
+                updateMinMaxMap(x + dx, y - dy, &outerBorderX);
+                updateMinMaxMap(y - dy, x + dx, &outerBorderY);
+            }
+            if ((dx - 1) * (dx - 1) + dy * dy > r * r)
+                --dx;
+            else
+                ++dy;
+        } while (dx != 0);
+    }
+
+    std::unordered_set<Node*> border = {};
+
+    for (auto const& x_minmax_y : outerBorderX) {
+        border.insert(
+            G->getNode(x_minmax_y.first, std::get<0>(x_minmax_y.second))
+        );
+        border.insert(
+            G->getNode(x_minmax_y.first, std::get<1>(x_minmax_y.second))
+        );
+    }
+
+    for (auto const& y_minmax_x : outerBorderY) {
+        border.insert(
+            G->getNode(std::get<0>(y_minmax_x.second), y_minmax_x.first)
+        );
+        border.insert(
+            G->getNode(std::get<1>(y_minmax_x.second), y_minmax_x.first)
+        );
+    }
+        
+    std::vector<Node*> nodes;
+
+    std::copy_if(
+        border.begin(), border.end(),
+        std::back_inserter(nodes),
+        [&](Node* node){
+            if (!checkIfNodeExistInRadiusOnGrid(G, node->pos.x, node->pos.y, child_agent->radius))
+                return false;
+
+            for (auto conflicting_agent: setOfAgentIdsInConflict) {
+                for (
+                    auto node_in_conflicting_agent_path = (conflicting_agent->path).begin();
+                    node_in_conflicting_agent_path != (conflicting_agent->path).end() - 1;
+                    node_in_conflicting_agent_path++)
+                {
+                    if ((*node_in_conflicting_agent_path)->euclideanDist(node) < conflicting_agent->radius + child_agent->radius)
+                        return false;
+                }
+            }
             return true;
         }
-    }
-    return false;
+    );
+
+    return nodes;
 }

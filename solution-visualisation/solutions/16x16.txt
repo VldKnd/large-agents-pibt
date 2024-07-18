@@ -2,13 +2,13 @@ instance=../tests/problems/16x16.txt
 agents=2
 radiuses=1, 1
 map_file=16x16.map
-solver=One Step Free Space Priority Inheritance With Backtracking (OSFSPIBT)
+solver=Free Space Priority Inheritance With Backtracking V2 (FSPIBTV2)
 solved=1
-soc=14
+soc=16
 lb_soc=8
 makespan=8
 lb_makespan=4
-comp_time=0
+comp_time=3394
 preprocessing_comp_time=0
 starts=(8,4),(8,8),
 goals=(8,8),(8,4),
@@ -17,8 +17,8 @@ solution=
 1:(8,5),(8,7),
 2:(7,5),(8,7),
 3:(6,5),(8,7),
-4:(6,6),(8,6),
-5:(6,7),(8,5),
-6:(7,7),(8,4),
-7:(8,7),(8,4),
+4:(6,6),(8,7),
+5:(6,7),(8,7),
+6:(6,8),(8,6),
+7:(7,8),(8,5),
 8:(8,8),(8,4),
