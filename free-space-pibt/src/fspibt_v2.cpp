@@ -248,6 +248,9 @@ bool FSPIBTV2::inheritanceConflict(Agent *agent, const std::vector<Agent *> &all
 
 int FSPIBTV2::solveInheritanceConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents)
 {
+    if (setOfAgentIdsInConflict.size() > 10)
+        return 0;
+
     auto compareToReachGoal = [&, child_agent](Node *const v, Node *const u)
     {
         auto d_v = (child_agent->path).back()->euclideanDist(v);
