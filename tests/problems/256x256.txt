@@ -1,5 +1,5 @@
 map_file=256x256.map
-agents=2000
+agents=1000
 radiuses=1.
 seed=0
 random_problem=0

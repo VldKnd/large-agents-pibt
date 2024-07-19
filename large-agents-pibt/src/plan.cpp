@@ -160,7 +160,7 @@ bool Plan::validate(const Config& starts) const
   return true;
 }
 
-bool Plan::validate(FreeSpaceMapfProblem* P) const
+bool Plan::validate(LargeAgentsMapfProblem* P) const
 {
     if (configs.empty()) return false;
 

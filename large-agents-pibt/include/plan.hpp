@@ -58,14 +58,14 @@ public:
 
     // check the plan is valid or not
     bool validate(MapfProblem *P) const;
-    bool validate(FreeSpaceMapfProblem *P) const;
+    bool validate(LargeAgentsMapfProblem *P) const;
     bool validate(const Config &starts, const Config &goals) const;
     bool validate(const Config &starts) const;
 
     // when updating a single path,
     // the path should be longer than this value to avoid conflicts
     int getMaxConstraintTime(const int id, Node *s, Node *g, Graph *G) const;
-    int getMaxConstraintTime(const int id, FreeSpaceMapfProblem *P) const;
+    int getMaxConstraintTime(const int id, LargeAgentsMapfProblem *P) const;
     int getMaxConstraintTime(const int id, MapfProblem *P) const;
 
     // error

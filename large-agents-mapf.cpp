@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
   }
 
   //  set problem
-  auto P = FreeSpaceMapfProblem(instance_file);
+  auto P = LargeAgentsMapfProblem(instance_file);
 
   // set max computation time (otherwise, use param in instance_file)
   if (max_comp_time != -1)
