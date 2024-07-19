@@ -196,7 +196,10 @@ bool FSPIBT::funcFSPIBT(Agent *ai, Agent *aj, const Agents &A)
     for (Node *u : C)
     {
 
-        if (pathDist(ai->id, u) == max_timestep + 1)
+        if (
+            pathDist(ai->id, u) == max_timestep + 1 ||
+            getRandomFloat(0., 1, MT) < 0.5
+        )
         {
             continue;
         }

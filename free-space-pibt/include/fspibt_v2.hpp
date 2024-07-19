@@ -32,10 +32,12 @@ private:
 public:
     explicit FSPIBTV2(FreeSpaceMapfProblem *P);
 
-    Nodes getNodesToAvoidInheritanceConflict(const Agent *agent, const std::vector<Agent *> &allAgents);
+    Nodes getNodesToAvoidInheritanceConflict(const Agent *child_agent, const Agent *parent_agent);
     
     bool collisionConflict(Agent *agent, const std::vector<Agent *> &allAgents);
     bool inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAgents);
 
-    int solveInheritanceConflict(Agent *agent, const std::vector<Agent *> &allAgents);
+    bool collisionConflictWithAgentsInConflict(Agent *child_agent, Agent* parent_agent, const std::vector<Agent *> &allAgents);
+    int solveInheritanceConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents);
+    bool collisionConflict(Agent *child_agent, Agent* parent_agent, const std::vector<Agent *> &allAgents);
 };

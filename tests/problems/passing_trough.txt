@@ -1,0 +1,13 @@
+map_file=64x64.map
+agents=6
+radiuses=10., 1., 1., 1., 1., 1.
+seed=0
+random_problem=0
+max_timestep=2000
+max_comp_time=5000
+12,32,52,32
+24,27,24,22
+24,31,24,31
+24,35,24,35
+24,39,24,39
+24,43,24,43
