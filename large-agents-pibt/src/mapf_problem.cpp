@@ -42,9 +42,9 @@ void MapfProblem::warn(const std::string &msg) const {
 }
 
 // -------------------------------------------
-// FSMAPF
+// Large Agents MAPF
 
-FreeSpaceMapfProblem::FreeSpaceMapfProblem(const std::string &_instance)
+LargeAgentsMapfProblem::LargeAgentsMapfProblem(const std::string &_instance)
         : MapfProblem(_instance), instance_initialized(true), radiuses(std::vector<float>(0)) {
     // read instance file
     std::ifstream file(instance);
@@ -203,7 +203,7 @@ FreeSpaceMapfProblem::FreeSpaceMapfProblem(const std::string &_instance)
     config_g.resize(num_agents);
 }
 
-FreeSpaceMapfProblem::FreeSpaceMapfProblem(FreeSpaceMapfProblem *P, Config _config_s,
+LargeAgentsMapfProblem::LargeAgentsMapfProblem(LargeAgentsMapfProblem *P, Config _config_s,
                                  Config _config_g, int _max_comp_time,
                                  int _max_timestep, std::vector<float> *_radiuses)
         : MapfProblem(P->getInstanceFileName(), P->getG(), P->getMT(), _config_s,
@@ -212,7 +212,7 @@ FreeSpaceMapfProblem::FreeSpaceMapfProblem(FreeSpaceMapfProblem *P, Config _conf
           radiuses(*_radiuses) {
 }
 
-FreeSpaceMapfProblem::FreeSpaceMapfProblem(FreeSpaceMapfProblem *P, int _max_comp_time)
+LargeAgentsMapfProblem::LargeAgentsMapfProblem(LargeAgentsMapfProblem *P, int _max_comp_time)
         : MapfProblem(P->getInstanceFileName(), P->getG(), P->getMT(),
                   P->getConfigStart(), P->getConfigGoal(), P->getNum(),
                   P->getMaxTimestep(), _max_comp_time),
@@ -220,34 +220,34 @@ FreeSpaceMapfProblem::FreeSpaceMapfProblem(FreeSpaceMapfProblem *P, int _max_com
           radiuses(P->getRadiuses()) {
 }
 
-FreeSpaceMapfProblem::~FreeSpaceMapfProblem() {
+LargeAgentsMapfProblem::~LargeAgentsMapfProblem() {
     if (instance_initialized) {
         if (G != nullptr) delete G;
         if (MT != nullptr) delete MT;
     }
 }
 
-bool FreeSpaceMapfProblem::isInCollision(Config *C, int id, float r) {
+bool LargeAgentsMapfProblem::isInCollision(Config *C, int id, float r) {
     Grid *grid = reinterpret_cast<Grid *>(G);
     int y = std::ceil(id / grid->getHeight());
     int x = (id - y);
     return isInCollision(C, x, y, r);
 }
 
-bool FreeSpaceMapfProblem::isInCollision(Config *C, int x, int y, float r) {
+bool LargeAgentsMapfProblem::isInCollision(Config *C, int x, int y, float r) {
     for (int i = 0; i < (*C).size(); i++) {
         if ((*C)[i]->pos.euclideanDist(Pos(x, y)) < r + radiuses[i]) return true;
     }
     return false;
 }
 
-void FreeSpaceMapfProblem::setRandomStartsGoals() {
+void LargeAgentsMapfProblem::setRandomStartsGoals() {
     setRandomStarts();
     setRandomGoals();
 }
 
 
-void FreeSpaceMapfProblem::setRandomStarts() {
+void LargeAgentsMapfProblem::setRandomStarts() {
     config_s.clear();
     Grid *grid = reinterpret_cast<Grid *>(G);
     const int N = grid->getWidth() * grid->getHeight();
@@ -270,7 +270,7 @@ void FreeSpaceMapfProblem::setRandomStarts() {
     }
 }
 
-void FreeSpaceMapfProblem::setRandomGoals() {
+void LargeAgentsMapfProblem::setRandomGoals() {
     config_g.clear();
     Grid *grid = reinterpret_cast<Grid *>(G);
     const int N = grid->getWidth() * grid->getHeight();
@@ -297,16 +297,16 @@ void FreeSpaceMapfProblem::setRandomGoals() {
  * Note: Just as with MAPF and even more it is hard to generate
  * well-formed instances with dense situations
  */
-void FreeSpaceMapfProblem::setWellFormedInstance() {
+void LargeAgentsMapfProblem::setWellFormedInstance() {
     setWellFormedStarts();
     setWellFormedGoals();
 }
 
-void FreeSpaceMapfProblem::setWellFormedStarts() {
+void LargeAgentsMapfProblem::setWellFormedStarts() {
     setRandomStarts();
 };
 
-void FreeSpaceMapfProblem::setWellFormedGoals() {
+void LargeAgentsMapfProblem::setWellFormedGoals() {
     Grid *grid = reinterpret_cast<Grid *>(G);
     const int N = grid->getWidth() * grid->getHeight();
 
@@ -360,7 +360,7 @@ void FreeSpaceMapfProblem::setWellFormedGoals() {
  * end of wellformed snippet
  */
 
-void FreeSpaceMapfProblem::makeScenFile(const std::string &output_file) {
+void LargeAgentsMapfProblem::makeScenFile(const std::string &output_file) {
     Grid *grid = reinterpret_cast<Grid *>(G);
     std::ofstream log;
     log.open(output_file, std::ios::out);

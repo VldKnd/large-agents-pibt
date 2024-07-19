@@ -130,9 +130,9 @@ public:
 };
 
 // -----------------------------------------------
-// base class for Free Space Agent
+// base class for Large Agents
 // -----------------------------------------------
-class FreeSpaceMAPFSolver : public MinimumSolver
+class LargeAgentsMAPFSolver : public MinimumSolver
 {
 public:
     int getLowerBoundSOC();
@@ -142,8 +142,8 @@ public:
     int pathDist(int i, Node *s) const;
     int pathDist(int i) const;
     void createDistanceTable();
-    explicit FreeSpaceMAPFSolver(FreeSpaceMapfProblem *P);
-    ~FreeSpaceMAPFSolver() override;
+    explicit LargeAgentsMAPFSolver(LargeAgentsMapfProblem *P);
+    ~LargeAgentsMAPFSolver() override;
 
     // used for checking conflicts
     void updateSizedPathTable(const PathsWithRadius &paths, const int id);
@@ -155,7 +155,7 @@ public:
     static Plan sizedPathsToPlan(const PathsWithRadius &paths); // paths -> plan
 
 protected:
-    FreeSpaceMapfProblem *const P;
+    LargeAgentsMapfProblem *const P;
     using DistanceTable = std::vector<std::vector<int>>;
     DistanceTable distance_table;
     DistanceTable *distance_table_p;
@@ -173,6 +173,6 @@ private:
     void computeLowerBounds();
 };
 
-std::unique_ptr<FreeSpaceMAPFSolver> getSolver(const std::string &solver_name,
-                                               FreeSpaceMapfProblem *P, bool verbose, int argc,
+std::unique_ptr<LargeAgentsMAPFSolver> getSolver(const std::string &solver_name,
+                                               LargeAgentsMapfProblem *P, bool verbose, int argc,
                                                char *argv[]);

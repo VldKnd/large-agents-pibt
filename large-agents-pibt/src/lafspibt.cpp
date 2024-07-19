@@ -3,18 +3,18 @@
 #include <exception>
 #include <unordered_set>
 
-#include "../include/fspibt_v2.hpp"
+#include "../include/lapibt.hpp"
 
-const std::string FSPIBTV2::SOLVER_NAME = "Free Space Priority Inheritance With Backtracking V2 (FSPIBTV2)";
+const std::string LAPIBT::SOLVER_NAME = "Free Space Priority Inheritance With Backtracking V2 (LAPIBT)";
 
-FSPIBTV2::FSPIBTV2(FreeSpaceMapfProblem *problem)
-    : FreeSpaceMAPFSolver(problem),
-      setOfAgentIdsInConflict()
+LAPIBT::LAPIBT(LargeAgentsMapfProblem *problem)
+    : LargeAgentsMAPFSolver(problem),
+      setOfAgentsInConflict()
 {
-    solver_name = FSPIBTV2::SOLVER_NAME;
+    solver_name = LAPIBT::SOLVER_NAME;
 }
 
-void FSPIBTV2::run()
+void LAPIBT::run()
 {
     auto compareAllAgents = [](Agent *agent_lhs, const Agent *agent_rhs)
     {
@@ -65,7 +65,7 @@ void FSPIBTV2::run()
         for (auto agent : allAgents)
         {
             if ((agent->path).size() == 1) // run if its just { v_t0 }
-                funcFSPIBTV2(agent, allAgents);
+                mainLAPIBT(agent, allAgents);
         }
 
         bool check_goal_condition = true;
@@ -103,7 +103,7 @@ void FSPIBTV2::run()
         delete a;
 }
 
-void FSPIBTV2::funcFSPIBTV2(Agent *agent, const std::vector<Agent *> &allAgents)
+void LAPIBT::mainLAPIBT(Agent *agent, const std::vector<Agent *> &allAgents)
 {
     if (agent->goal == (agent->path).back())
     {
@@ -146,13 +146,13 @@ void FSPIBTV2::funcFSPIBTV2(Agent *agent, const std::vector<Agent *> &allAgents)
     (agent->path).push_back((agent->path).back());
 }
 
-bool FSPIBTV2::collisionConflict(Agent *agent, const std::vector<Agent *> &allAgents)
+bool LAPIBT::collisionConflict(Agent *agent, const std::vector<Agent *> &allAgents)
 {
     for (auto other_agent : allAgents)
     {
         if (
             other_agent->id != agent->id &&
-            setOfAgentIdsInConflict.find(other_agent) == setOfAgentIdsInConflict.end() &&
+            setOfAgentsInConflict.find(other_agent) == setOfAgentsInConflict.end() &&
             (other_agent->path).size() >= (agent->path).size())
         {
             for (
@@ -168,9 +168,9 @@ bool FSPIBTV2::collisionConflict(Agent *agent, const std::vector<Agent *> &allAg
     return false;
 }
 
-bool FSPIBTV2::collisionConflictWithAgentsInConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents)
+bool LAPIBT::collisionConflictWithAgentsInConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents)
 {
-    for (auto other_agent : setOfAgentIdsInConflict)
+    for (auto other_agent : setOfAgentsInConflict)
     {
         int offset = parent_agent->id == other_agent->id;
         for (
@@ -185,13 +185,13 @@ bool FSPIBTV2::collisionConflictWithAgentsInConflict(Agent *child_agent, Agent *
     return false;
 }
 
-bool FSPIBTV2::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAgents)
+bool LAPIBT::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAgents)
 {
     
-    setOfAgentIdsInConflict.insert(agent);
+    setOfAgentsInConflict.insert(agent);
 
-    std::vector<std::tuple<Agent *, int>> vector_of_agents_and_agents_steps_during_iheritance = {};
-    int path_size_before_conflict_resolution = (agent ->path).size();
+    std::vector<std::tuple<Agent *, int>> vector_of_agents_and_steps = {};
+    int initial_path_size = (agent ->path).size();
 
     auto agent_iterator = allAgents.begin();
     while (agent_iterator != allAgents.end())
@@ -201,16 +201,16 @@ bool FSPIBTV2::inheritanceConflict(Agent *agent, const std::vector<Agent *> &all
 
         if (
             other_agent->id != agent->id &&
-            setOfAgentIdsInConflict.find(other_agent) == setOfAgentIdsInConflict.end() &&
+            setOfAgentsInConflict.find(other_agent) == setOfAgentsInConflict.end() &&
             (other_agent->path).size() < (agent->path).size() &&
             (other_agent->path).back()->euclideanDist((agent->path).back()) < agent->radius + other_agent->radius)
         {
-            int numberOfStepsDuringIheritanceConflict = solveInheritanceConflict(other_agent, agent, allAgents);
+            int steps_in_inheritance_conflict = solveInheritanceConflict(other_agent, agent, allAgents);
 
-            if (numberOfStepsDuringIheritanceConflict != 0)
+            if (steps_in_inheritance_conflict != 0)
             {
-                vector_of_agents_and_agents_steps_during_iheritance.push_back(
-                    {other_agent, numberOfStepsDuringIheritanceConflict});
+                vector_of_agents_and_steps.push_back(
+                    {other_agent, steps_in_inheritance_conflict});
 
                 while ((agent ->path).size() < (other_agent->path).size()) {
                     (agent->path).insert((agent->path).end() - 1, *((agent->path).end() - 2));
@@ -218,68 +218,61 @@ bool FSPIBTV2::inheritanceConflict(Agent *agent, const std::vector<Agent *> &all
             }
             else
             {
-                while (vector_of_agents_and_agents_steps_during_iheritance.size())
+                while (vector_of_agents_and_steps.size())
                 {
-                    std::tuple<Agent *, int> agents_and_agents_steps_during_iheritance =
-                        vector_of_agents_and_agents_steps_during_iheritance.back();
-                    vector_of_agents_and_agents_steps_during_iheritance.pop_back();
-                    Agent *agent_in_iheritance_conflict = std::get<0>(agents_and_agents_steps_during_iheritance);
-                    int agents_steps_during_iheritance = std::get<1>(agents_and_agents_steps_during_iheritance);
+                    std::tuple<Agent *, int> agent_and_steps =
+                        vector_of_agents_and_steps.back();
+                    vector_of_agents_and_steps.pop_back();
+                    Agent *agent_in_iheritance_conflict = std::get<0>(agent_and_steps);
+                    int steps_in_inheritance_conflict = std::get<1>(agent_and_steps);
 
-                    for (int i = agents_steps_during_iheritance; i--;)
+                    for (int i = steps_in_inheritance_conflict; i--;)
                     {
                         (agent_in_iheritance_conflict->path).pop_back();
                     }
                 }
 
-                while ((agent->path).size() > path_size_before_conflict_resolution) {
+                while ((agent->path).size() > initial_path_size) {
                     (agent->path).erase((agent->path).end() - 2);
                 }
 
-                setOfAgentIdsInConflict.erase(agent);
+                setOfAgentsInConflict.erase(agent);
                 return true;
             }
         }
     }
 
-    setOfAgentIdsInConflict.erase(agent);
+    setOfAgentsInConflict.erase(agent);
     return false;
 }
 
-int FSPIBTV2::solveInheritanceConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents)
+int LAPIBT::solveInheritanceConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents)
 {
-    if (setOfAgentIdsInConflict.size() > 10)
+    if (setOfAgentsInConflict.size() > 10)
         return 0;
 
-    auto compareToReachGoal = [&, child_agent](Node *const v, Node *const u)
+    Nodes nodes_outside_of_inheritance_conflict = getNodesToAvoidInheritanceConflict(child_agent, parent_agent);
+
+    std::sort(
+        nodes_outside_of_inheritance_conflict.begin(),
+        nodes_outside_of_inheritance_conflict.end(),
+        [&, child_agent](Node *const v, Node *const u)
     {
         auto d_v = (child_agent->path).back()->euclideanDist(v);
         auto d_u = (child_agent->path).back()->euclideanDist(u);
-        // auto d_v = pathDist(child_agent->id, v);
-        // auto d_u = pathDist(child_agent->id, u);
         return d_v < d_u;
-    };
-
-    Nodes nodesOutsideOfCurrentInheritanceConflict = getNodesToAvoidInheritanceConflict(child_agent, parent_agent);
-
-    std::sort(
-        nodesOutsideOfCurrentInheritanceConflict.begin(),
-        nodesOutsideOfCurrentInheritanceConflict.end(),
-        compareToReachGoal);
+    });
 
     std::unordered_set<int> ids_of_visited_nodes = {};
     bool next_node_found_during_greedy_bfs = false;
     int counter_of_steps_made = 0;
 
-    for (auto node_to_reach : nodesOutsideOfCurrentInheritanceConflict)
+    for (auto node_to_reach : nodes_outside_of_inheritance_conflict)
     {
         if (
             pathDist(child_agent->id, node_to_reach) == max_timestep + 1 ||
             getRandomFloat(0., 1, MT) < 0.5 /// Is needed to prevent deadlocks
-        )
-        {
-            continue;
-        }
+        ) continue;
 
         counter_of_steps_made = 0;
         ids_of_visited_nodes.clear();
@@ -352,7 +345,7 @@ int FSPIBTV2::solveInheritanceConflict(Agent *child_agent, Agent *parent_agent, 
     return 0;
 }
 
-Nodes FSPIBTV2::getNodesToAvoidInheritanceConflict(const Agent *child_agent, const Agent *parent_agent)
+Nodes LAPIBT::getNodesToAvoidInheritanceConflict(const Agent *child_agent, const Agent *parent_agent)
 {
     int x = ((parent_agent->path).back()->pos).x;
     int y = ((parent_agent->path).back()->pos).y;

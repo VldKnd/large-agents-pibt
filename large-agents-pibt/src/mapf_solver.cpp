@@ -5,9 +5,7 @@
 #include <cmath>
 
 #include "../include/graph_utils.hpp"
-#include "../include/fspibt.hpp"
-#include "../include/osfspibt.hpp"
-#include "../include/fspibt_v2.hpp"
+#include "../include/lapibt.hpp"
 
 MinimumSolver::MinimumSolver(MapfProblem* _P)
     : solver_name(""),
@@ -76,7 +74,7 @@ void MinimumSolver::printHelpWithoutOption(const std::string& solver_name)
 // -----------------------------------------------
 // base class for Free Space Agent
 // -----------------------------------------------
-FreeSpaceMAPFSolver::FreeSpaceMAPFSolver(FreeSpaceMapfProblem* problem)
+LargeAgentsMAPFSolver::LargeAgentsMAPFSolver(LargeAgentsMapfProblem* problem)
         : MinimumSolver(problem),
           P(problem),
           LB_soc(0),
@@ -85,7 +83,7 @@ FreeSpaceMAPFSolver::FreeSpaceMAPFSolver(FreeSpaceMapfProblem* problem)
                          std::vector<int>(G->getNodesSize(), max_timestep + 1)),
           distance_table_p(nullptr) {}
 
-void FreeSpaceMAPFSolver::exec()
+void LargeAgentsMAPFSolver::exec()
 {
     // create distance table
     if (distance_table_p == nullptr) {
@@ -98,7 +96,7 @@ void FreeSpaceMAPFSolver::exec()
     run();
 }
 
-void FreeSpaceMAPFSolver::createDistanceTable(){
+void LargeAgentsMAPFSolver::createDistanceTable(){
 
     Grid* grid = reinterpret_cast<Grid*>(G);
 
@@ -130,7 +128,7 @@ void FreeSpaceMAPFSolver::createDistanceTable(){
     distance_table_p = &distance_table;
 }
 
-void FreeSpaceMAPFSolver::printResult()
+void LargeAgentsMAPFSolver::printResult()
 {
     std::cout << "solved=" << solved << ", solver=" << std::right << std::setw(8)
               << solver_name << ", comp_time(ms)=" << std::right << std::setw(8)
@@ -143,19 +141,19 @@ void FreeSpaceMAPFSolver::printResult()
 }
 
 
-int FreeSpaceMAPFSolver::getLowerBoundMakespan()
+int LargeAgentsMAPFSolver::getLowerBoundMakespan()
 {
     if (LB_makespan == 0) computeLowerBounds();
     return LB_makespan;
 }
 
-int FreeSpaceMAPFSolver::getLowerBoundSOC()
+int LargeAgentsMAPFSolver::getLowerBoundSOC()
 {
     if (LB_soc == 0) computeLowerBounds();
     return LB_soc;
 }
 
-void FreeSpaceMAPFSolver::computeLowerBounds()
+void LargeAgentsMAPFSolver::computeLowerBounds()
 {
     LB_soc = 0;
     LB_makespan = 0;
@@ -167,7 +165,7 @@ void FreeSpaceMAPFSolver::computeLowerBounds()
     }
 }
 
-void FreeSpaceMAPFSolver::makeLogBasicInfo(std::ofstream& log)
+void LargeAgentsMAPFSolver::makeLogBasicInfo(std::ofstream& log)
 {
 
     int size = int(P->getRadiuses().size());
@@ -190,7 +188,7 @@ void FreeSpaceMAPFSolver::makeLogBasicInfo(std::ofstream& log)
     log << "preprocessing_comp_time=" << preprocessing_comp_time << "\n";
 }
 
-void FreeSpaceMAPFSolver::makeLogSolution(std::ofstream& log)
+void LargeAgentsMAPFSolver::makeLogSolution(std::ofstream& log)
 {
     if (log_short) return;
     log << "starts=";
@@ -215,7 +213,7 @@ void FreeSpaceMAPFSolver::makeLogSolution(std::ofstream& log)
     }
 }
 
-int FreeSpaceMAPFSolver::pathDist(const int i, Node* const s) const
+int LargeAgentsMAPFSolver::pathDist(const int i, Node* const s) const
 {
     if (distance_table_p != nullptr) {
         return distance_table_p->at(i)[s->id];
@@ -223,12 +221,12 @@ int FreeSpaceMAPFSolver::pathDist(const int i, Node* const s) const
     return distance_table[i][s->id];
 }
 
-int FreeSpaceMAPFSolver::pathDist(const int i) const
+int LargeAgentsMAPFSolver::pathDist(const int i) const
 {
     return pathDist(i, P->getStart(i));
 }
 
-void FreeSpaceMAPFSolver::makeLog(const std::string& logfile)
+void LargeAgentsMAPFSolver::makeLog(const std::string& logfile)
 {
     std::ofstream log;
     log.open(logfile, std::ios::out);
@@ -237,9 +235,9 @@ void FreeSpaceMAPFSolver::makeLog(const std::string& logfile)
     log.close();
 }
 
-FreeSpaceMAPFSolver::~FreeSpaceMAPFSolver() = default;
+LargeAgentsMAPFSolver::~LargeAgentsMAPFSolver() = default;
 
-void FreeSpaceMAPFSolver::clearSizedPathTable(const PathsWithRadius& paths)
+void LargeAgentsMAPFSolver::clearSizedPathTable(const PathsWithRadius& paths)
 {
     const int makespan = paths.getMakespan();
     const int num_agents = paths.size();
@@ -250,7 +248,7 @@ void FreeSpaceMAPFSolver::clearSizedPathTable(const PathsWithRadius& paths)
     }
 }
 
-void FreeSpaceMAPFSolver::updateSizedPathTable(const PathsWithRadius& paths, const int id)
+void LargeAgentsMAPFSolver::updateSizedPathTable(const PathsWithRadius& paths, const int id)
 {
     const int makespan = paths.getMakespan();
     const int num_agents = paths.size();
@@ -266,7 +264,7 @@ void FreeSpaceMAPFSolver::updateSizedPathTable(const PathsWithRadius& paths, con
     }
 }
 
-void FreeSpaceMAPFSolver::updateSizedPathTableWithoutClear(const int id, const PathWithRadius& path,
+void LargeAgentsMAPFSolver::updateSizedPathTableWithoutClear(const int id, const PathWithRadius& path,
                                               const PathsWithRadius& paths)
 {
     if (path.empty()) return;
@@ -294,7 +292,7 @@ void FreeSpaceMAPFSolver::updateSizedPathTableWithoutClear(const int id, const P
     }
 }
 
-Plan FreeSpaceMAPFSolver::sizedPathsToPlan(const PathsWithRadius& paths)
+Plan LargeAgentsMAPFSolver::sizedPathsToPlan(const PathsWithRadius& paths)
 {
     Plan plan;
     if (paths.empty()) return plan;
@@ -310,26 +308,20 @@ Plan FreeSpaceMAPFSolver::sizedPathsToPlan(const PathsWithRadius& paths)
     return plan;
 }
 
-std::unique_ptr<FreeSpaceMAPFSolver> getSolver(const std::string &solver_name,
-                                               FreeSpaceMapfProblem *P, bool verbose, int argc,
+std::unique_ptr<LargeAgentsMAPFSolver> getSolver(const std::string &solver_name,
+                                               LargeAgentsMapfProblem *P, bool verbose, int argc,
                                                char *argv[])
 {
-    std::unique_ptr<FreeSpaceMAPFSolver> solver;
-    if (solver_name == "FSPIBT")
+    std::unique_ptr<LargeAgentsMAPFSolver> solver;
+    if (solver_name == "LAPIBT")
     {
-        solver = std::make_unique<FSPIBT>(P);
-    } else if (solver_name == "OSFSPIBT")
-    {
-        solver = std::make_unique<OSFSPIBT>(P);
-    } else if (solver_name == "FSPIBTV2")
-    {
-        solver = std::make_unique<FSPIBTV2>(P);
+        solver = std::make_unique<LAPIBT>(P);
     }
     else
     {
         std::cout << "warn@mapf: "
                   << "unknown solver name, " << solver_name
-                  << ", availible options are ['FSPIBT', 'OSFSPIBT', 'FSPIBTV2']."
+                  << ", availible options are ['LAPIBT']."
                   << std::endl;
         exit(1);
     }

@@ -72,7 +72,7 @@ public:
   void setMaxCompTime(const int t) { max_comp_time = t; }
 };
 
-class FreeSpaceMapfProblem : public MapfProblem
+class LargeAgentsMapfProblem : public MapfProblem
 {
 private:
   const bool instance_initialized; // for memory manage
@@ -90,11 +90,11 @@ private:
 public:
   std::vector<float> getRadiuses() { return radiuses; }
   float getRadius(int i) { return radiuses[i]; }
-  FreeSpaceMapfProblem(const std::string &_instance);
-  FreeSpaceMapfProblem(FreeSpaceMapfProblem *P, Config _config_s, Config _config_g,
+  LargeAgentsMapfProblem(const std::string &_instance);
+  LargeAgentsMapfProblem(LargeAgentsMapfProblem *P, Config _config_s, Config _config_g,
                        int _max_comp_time, int _max_timestep, std::vector<float> *_radiuses);
-  FreeSpaceMapfProblem(FreeSpaceMapfProblem *P, int _max_comp_time);
-  ~FreeSpaceMapfProblem();
+  LargeAgentsMapfProblem(LargeAgentsMapfProblem *P, int _max_comp_time);
+  ~LargeAgentsMapfProblem();
 
   bool isInitializedInstance() const { return instance_initialized; }
 
