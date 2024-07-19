@@ -921,3 +921,5 @@ local-s3
 
 .tool-versions
 poetry.toml
+
+solution-visualisation/videos/*
