@@ -74,8 +74,6 @@ void LAPIBT::run()
         {
             if ((agent->path).size() == 1){
                 mainLAPIBT(agent, allAgents);
-                if ((*((agent->path).end()-1))->id == agent->goal->id)
-                    break;
             }
         }
 
