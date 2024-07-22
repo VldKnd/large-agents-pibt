@@ -44,8 +44,20 @@ void MapfProblem::warn(const std::string &msg) const {
 // -------------------------------------------
 // Large Agents MAPF
 
-LargeAgentsMapfProblem::LargeAgentsMapfProblem(const std::string &_instance)
-        : MapfProblem(_instance), instance_initialized(true), radiuses(std::vector<float>(0)) {
+LargeAgentsMapfProblem::LargeAgentsMapfProblem(const std::string& _instance, const int seed)
+    : MapfProblem(_instance), instance_initialized(true), radiuses(std::vector<float>(0))
+{
+    MT = new std::mt19937(seed);
+    readInstanceFile(_instance);
+}
+
+LargeAgentsMapfProblem::LargeAgentsMapfProblem(const std::string& _instance)
+    : MapfProblem(_instance), instance_initialized(true), radiuses(std::vector<float>(0))
+{
+    readInstanceFile(_instance);
+}
+
+void LargeAgentsMapfProblem::readInstanceFile(const std::string &_instance) {
     // read instance file
     std::ifstream file(instance);
     if (!file) halt("file " + instance + " is not found.");
@@ -57,6 +69,7 @@ LargeAgentsMapfProblem::LargeAgentsMapfProblem(const std::string &_instance)
     std::regex r_agents = std::regex(R"(agents=(\d+))");
     std::regex r_well_formed = std::regex(R"(well_formed=(\d+))");
     std::regex r_radiuses = std::regex("radiuses=(\\(?(\\d*[.]?\\d*,? ?)*\\)?)");
+    std::regex r_radiuses_random_uniform = std::regex(R"(radiuses_random_uniform=(\d*[.]?\d*),(\d*[.]?\d*))");
     std::regex r_seed = std::regex(R"(seed=(\d+))");
     std::regex r_random_problem = std::regex(R"(random_problem=(\d+))");
     std::regex r_max_timestep = std::regex(R"(max_timestep=(\d+))");
@@ -65,6 +78,8 @@ LargeAgentsMapfProblem::LargeAgentsMapfProblem(const std::string &_instance)
 
     bool read_scen = true;
     bool well_formed = false;
+    bool radius_done = false;
+
     while (getline(file, line)) {
         if (*(line.end() - 1) == 0x0d) line.pop_back();
 
@@ -83,7 +98,19 @@ LargeAgentsMapfProblem::LargeAgentsMapfProblem(const std::string &_instance)
             continue;
         }
         // set radiuses
-        if (std::regex_match(line, results, r_radiuses)) {
+        if (std::regex_match(line, results, r_radiuses_random_uniform) && !radius_done) {
+          float r_min = std::stof(results[1].str());
+		  float r_max = std::stof(results[2].str());
+          std::random_device rand_dev;
+          std::mt19937 generator(rand_dev());
+          std::uniform_real_distribution<float> distr(r_min, r_max);
+          for (size_t i = 0; i < num_agents; i++){
+            radiuses.push_back(distr(generator));
+          }
+		  radius_done = true;
+		  continue;
+		}
+        else if (std::regex_match(line, results, r_radiuses) && !radius_done) {
             std::string result = results[1].str();
             std::string::iterator end_pos_ws = std::remove(result.begin(), result.end(), ' ');
             result.erase(end_pos_ws, result.end());
@@ -105,19 +132,21 @@ LargeAgentsMapfProblem::LargeAgentsMapfProblem(const std::string &_instance)
 
             // check radiuses initialized
             if (radiuses.size() < num_agents) {
-                const float range_from = 1.;
-                const float range_to = 2.;
-                std::random_device rand_dev;
-                std::mt19937 generator(rand_dev());
-                std::uniform_real_distribution<float> distr(range_from, range_to);
-
+                std::string warn_text = (
+                    "only " + std::to_string(radiuses.size()) +
+                     " radiuses given for " + std::to_string(num_agents) +
+                     " agents, set remaining agents with default radius 0.45"
+                );
+                warn(warn_text);
+    
                 for (size_t i = radiuses.size(); i < num_agents; i++) {
-                    radiuses.push_back(distr(generator));
+                    radiuses.push_back(0.45);
                 }
             }
 
             radiuses.resize(num_agents);
-
+            radius_done = true;
+            
             continue;
         }
         // set random seed

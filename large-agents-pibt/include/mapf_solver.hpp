@@ -174,5 +174,7 @@ private:
 };
 
 std::unique_ptr<LargeAgentsMAPFSolver> getSolver(const std::string &solver_name,
-                                               LargeAgentsMapfProblem *P, bool verbose, int argc,
-                                               char *argv[]);
+                                               LargeAgentsMapfProblem *P,
+                                               int instanceDepth, bool verbose,
+                                               int argc, char *argv[]
+                                            );

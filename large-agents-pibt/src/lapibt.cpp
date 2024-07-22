@@ -7,9 +7,17 @@
 
 const std::string LAPIBT::SOLVER_NAME = "Free Space Priority Inheritance With Backtracking V2 (LAPIBT)";
 
-LAPIBT::LAPIBT(LargeAgentsMapfProblem *problem)
-    : LargeAgentsMAPFSolver(problem),
+
+LAPIBT::LAPIBT(LargeAgentsMapfProblem *problem, int inheritanceDepth)
+    : LargeAgentsMAPFSolver(problem), inheritanceDepth(inheritanceDepth),
       setOfAgentsInConflict()
+{
+    solver_name = LAPIBT::SOLVER_NAME;
+}
+
+
+LAPIBT::LAPIBT(LargeAgentsMapfProblem *problem)
+    : LargeAgentsMAPFSolver(problem), setOfAgentsInConflict(), inheritanceDepth(5)
 {
     solver_name = LAPIBT::SOLVER_NAME;
 }
@@ -64,8 +72,11 @@ void LAPIBT::run()
 
         for (auto agent : allAgents)
         {
-            if ((agent->path).size() == 1) // run if its just { v_t0 }
+            if ((agent->path).size() == 1){
                 mainLAPIBT(agent, allAgents);
+                if ((*((agent->path).end()-1))->id == agent->goal->id)
+                    break;
+            }
         }
 
         bool check_goal_condition = true;
@@ -187,7 +198,6 @@ bool LAPIBT::collisionConflictWithAgentsInConflict(Agent *child_agent, Agent *pa
 
 bool LAPIBT::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAgents)
 {
-    
     setOfAgentsInConflict.insert(agent);
 
     std::vector<std::tuple<Agent *, int>> vector_of_agents_and_steps = {};
@@ -248,7 +258,7 @@ bool LAPIBT::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAg
 
 int LAPIBT::solveInheritanceConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents)
 {
-    if (setOfAgentsInConflict.size() > 10)
+    if (setOfAgentsInConflict.size() > inheritanceDepth)
         return 0;
 
     Nodes nodes_outside_of_inheritance_conflict = getNodesToAvoidInheritanceConflict(child_agent, parent_agent);

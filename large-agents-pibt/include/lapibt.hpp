@@ -19,7 +19,8 @@ private:
     };
 
     std::unordered_set<Agent*> setOfAgentsInConflict;
-    
+    int inheritanceDepth;
+
     // option
     bool disable_dist_init = false;
 
@@ -29,6 +30,7 @@ private:
 
 public:
     explicit LAPIBT(LargeAgentsMapfProblem *P);
+    explicit LAPIBT(LargeAgentsMapfProblem *P, int iheritanceDepth);
 
     Nodes getNodesToAvoidInheritanceConflict(const Agent *child_agent, const Agent *parent_agent);
     

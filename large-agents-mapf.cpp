@@ -8,6 +8,27 @@
 #include <random>
 #include <vector>
 
+void printHelp()
+{
+  std::cout << "\nUsage: ./lamapf [OPTIONS] [SOLVER-OPTIONS]\n"
+            << "\n**instance file is necessary to run LA-MAPF simulator**\n\n"
+            << "  -i --instance [FILE_PATH]     instance file path\n"
+            << "  -o --output [FILE_PATH]       ouptut file path\n"
+            << "  -v --verbose                  print additional info\n"
+            << "  -h --help                     help\n"
+            << "  -s --solver [SOLVER_NAME]     solver (LAPIBT)\n"
+            << "  -T --time-limit [INT]         max computation time (ms)\n"
+            << "  -L --log-short                use short log\n"
+            << "  -P --make-scen                make scenario file using "
+               "random starts/goals\n"
+            << "  -D --inheritanceDepth [INT]   inheritanceDepth of LA-PIBT" 
+               " (default=6)\n"
+            << "  -k --kSteps [INT]             k-steps parameter of LA-PIBT" 
+               " (default=1)\n"
+            << "  -x --seed [INT]               random generator seed (only "
+               "used when not set in the instance file)"
+            << std::endl;
+}
 
 int main(int argc, char *argv[])
 {
@@ -28,13 +49,17 @@ int main(int argc, char *argv[])
       {"time-limit", required_argument, 0, 'T'},
       {"log-short", no_argument, 0, 'L'},
       {"make-scen", no_argument, 0, 'P'},
+      {"inheritanceDepth", required_argument, 0, 'D'},
+      {"seed", required_argument, 0, 'x'},
       {0, 0, 0, 0},
   };
 
   bool make_scen = false;
   bool log_short = false;
   int max_comp_time = -1;
-
+  int inheritanceDepth = DEFAULT_INHERITANCE_DEPTH;
+  bool is_seed = false;
+  int seed = 0;
   // command line args
   int opt, longindex;
 
@@ -54,6 +79,9 @@ int main(int argc, char *argv[])
     case 'o':
       output_file = std::string(optarg);
       break;
+    case 'h':
+      printHelp();
+      return 0;
     case 'v':
       verbose = true;
       break;
@@ -66,6 +94,13 @@ int main(int argc, char *argv[])
     case 'T':
       max_comp_time = std::atoi(optarg);
       break;
+    case 'D':
+      inheritanceDepth = std::atoi(optarg);
+      break;
+    case 'x':
+      seed = std::atoi(optarg);
+      is_seed = true;
+      break;
     default:
       break;
     }
@@ -75,12 +110,12 @@ int main(int argc, char *argv[])
   {
     std::cout << "specify instance file using -i [INSTANCE-FILE], e.g.,"
               << std::endl;
-    std::cout << "> ./mapf -i ../instance/sample.txt" << std::endl;
+    std::cout << "> ./large-agents-mapf -i ../instance/sample.txt" << std::endl;
     return 0;
   }
 
   //  set problem
-  auto P = LargeAgentsMapfProblem(instance_file);
+  auto P = is_seed ? LargeAgentsMapfProblem(instance_file, seed) : LargeAgentsMapfProblem(instance_file);
 
   // set max computation time (otherwise, use param in instance_file)
   if (max_comp_time != -1)
@@ -94,7 +129,7 @@ int main(int argc, char *argv[])
   }
 
   //   solve
-  auto solver = getSolver(solver_name, &P, verbose, argc, argv_copy);
+  auto solver = getSolver(solver_name, &P, inheritanceDepth, verbose, argc, argv_copy);
   solver->setLogShort(log_short);
   solver->solve();
 
@@ -115,10 +150,9 @@ int main(int argc, char *argv[])
   else
   {
     std::cout << "Failed to converge\n";
-    //        P.makeScenFile(output_file);
     solver->makeLog(output_file);
   }
-  //     output result
+
   if (verbose)
   {
     std::cout << "save result as " << output_file << std::endl;

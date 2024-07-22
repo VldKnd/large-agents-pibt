@@ -86,11 +86,15 @@ private:
   void setWellFormedGoals();
   // set well-formed instance
   void setWellFormedInstance();
+  void readInstanceFile(const std::string& _instance);
 
 public:
   std::vector<float> getRadiuses() { return radiuses; }
   float getRadius(int i) { return radiuses[i]; }
   LargeAgentsMapfProblem(const std::string &_instance);
+  LargeAgentsMapfProblem(const std::string& _instance, const int seed);
+
+
   LargeAgentsMapfProblem(LargeAgentsMapfProblem *P, Config _config_s, Config _config_g,
                        int _max_comp_time, int _max_timestep, std::vector<float> *_radiuses);
   LargeAgentsMapfProblem(LargeAgentsMapfProblem *P, int _max_comp_time);

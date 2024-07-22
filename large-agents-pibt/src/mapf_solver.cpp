@@ -309,13 +309,15 @@ Plan LargeAgentsMAPFSolver::sizedPathsToPlan(const PathsWithRadius& paths)
 }
 
 std::unique_ptr<LargeAgentsMAPFSolver> getSolver(const std::string &solver_name,
-                                               LargeAgentsMapfProblem *P, bool verbose, int argc,
-                                               char *argv[])
+                                               LargeAgentsMapfProblem *P,
+                                               int inheritanceDepth, bool verbose,
+                                               int argc, char *argv[]
+                                            )
 {
     std::unique_ptr<LargeAgentsMAPFSolver> solver;
     if (solver_name == "LAPIBT")
     {
-        solver = std::make_unique<LAPIBT>(P);
+        solver = std::make_unique<LAPIBT>(P, inheritanceDepth);
     }
     else
     {
