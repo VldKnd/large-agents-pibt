@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.16)
+project(large-agents-pibt CXX)
+
+set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk")
+set(CMAKE_CXX_STANDARD             20)
+
+add_subdirectory(./large-agents-pibt)
+
+add_executable(large-agents-mapf large-agents-mapf.cpp)
+target_compile_features(large-agents-mapf PUBLIC cxx_std_17)
+target_link_libraries(large-agents-mapf lib-mapf)
+
+# format
+add_custom_target(clang-format
+  COMMAND clang-format -i
+  ../large-agents-pibt/include/*.hpp
+  ../large-agents-pibt/src/*.cpp
+  ../large-agents-mapf.cpp)
