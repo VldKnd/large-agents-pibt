@@ -4,9 +4,6 @@ file(GLOB SRCS "./src/*.cpp")
 project(lib-mapf)
 
 
-set(CMAKE_BUILD_TYPE Debug)
-
-
 add_library(lib-mapf STATIC ${SRCS})
 
 add_definitions(-D_MAPDIR_="${CMAKE_CURRENT_LIST_DIR}/../map/")
