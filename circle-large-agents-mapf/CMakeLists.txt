@@ -4,6 +4,8 @@ project(large-agents-pibt CXX)
 set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk")
 set(CMAKE_CXX_STANDARD             20)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 add_subdirectory(./large-agents-pibt)
 
 add_executable(large-agents-mapf large-agents-mapf.cpp)
