@@ -1,4 +1,4 @@
-<details open>
+<details>
 <summary>Example of a solution</summary>
 <br/>
 <div class="image-container">
