@@ -1,5 +1,6 @@
 <details open>
 <summary>Example of a solution</summary>
+<br/>
 <div class="image-container">
     <img style="display: none;" id="spinner" src="https://github.com/VldKnd/large-agents-pibt/blob/main/square-large-agents-mapf/readme_example.gif"/>
 </div>  
