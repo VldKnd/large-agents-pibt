@@ -1,6 +1,6 @@
 map_file=256x256.map
 agents=2
-radiuses_random_uniform=5.,10.
+sizes_random_uniform=5.,10.
 seed=2
 random_problem=0
 max_timestep=2000

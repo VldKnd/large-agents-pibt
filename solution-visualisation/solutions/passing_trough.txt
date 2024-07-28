@@ -1,6 +1,6 @@
 instance=../tests/problems/passing_trough.txt
 agents=6
-radiuses=10, 1, 1, 1, 1, 1
+sizes=10, 1, 1, 1, 1, 1
 map_file=64x64.map
 solver=Free Space Priority Inheritance With Backtracking V2 (FSPIBTV2)
 solved=1

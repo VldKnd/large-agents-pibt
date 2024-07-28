@@ -103,7 +103,7 @@ void LargeAgentsMAPFSolver::createDistanceTable(){
     for (int i = 0; i < P->getNum(); ++i) {
         std::queue<Node*> OPEN;
         Node* n = P->getGoal(i);
-        float r = P->getRadius(i);
+        float r = P->getSize(i);
         OPEN.push(n);
         distance_table[i][n->id] = 0;
         while (!OPEN.empty()) {
@@ -168,15 +168,15 @@ void LargeAgentsMAPFSolver::computeLowerBounds()
 void LargeAgentsMAPFSolver::makeLogBasicInfo(std::ofstream& log)
 {
 
-    int size = int(P->getRadiuses().size());
+    int size = int(P->getSizes().size());
     Grid* grid = reinterpret_cast<Grid*>(P->getG());
     log << "instance=" << P->getInstanceFileName() << "\n";
     log << "agents=" << P->getNum() << "\n";
-    log << "radiuses=";
+    log << "sizes=";
     for (int i = 0; i < size-1; i++) {
-        log << P->getRadius(i) << ", ";
+        log << P->getSize(i) << ", ";
     }
-    log << P->getRadius(size-1) << "\n";
+    log << P->getSize(size-1) << "\n";
     log << "map_file=" << grid->getMapFileName() << "\n";
     log << "solver=" << solver_name << "\n";
     log << "solved=" << solved << "\n";

@@ -172,7 +172,7 @@ void LargeAgentsMAPFSolver::makeLogBasicInfo(std::ofstream& log)
     Grid* grid = reinterpret_cast<Grid*>(P->getG());
     log << "instance=" << P->getInstanceFileName() << "\n";
     log << "agents=" << P->getNum() << "\n";
-    log << "radiuses=";
+    log << "sizes=";
     for (int i = 0; i < size-1; i++) {
         log << P->getSize(i) << ", ";
     }

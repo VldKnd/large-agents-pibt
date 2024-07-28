@@ -1,6 +1,6 @@
 instance=../square-large-agents-mapf/tests/problems/16x16.txt
 agents=2
-radiuses=3, 1
+sizes=3, 1
 map_file=16x16.map
 solver=Free Space Priority Inheritance With Backtracking V2 (LAPIBT)
 solved=1

@@ -1,6 +1,6 @@
 map_file=64x64.map
 agents=6
-radiuses=10., 1., 1., 1., 1., 1.
+sizes=10., 1., 1., 1., 1., 1.
 seed=0
 random_problem=0
 max_timestep=2000

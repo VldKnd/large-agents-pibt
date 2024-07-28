@@ -68,8 +68,8 @@ void LargeAgentsMapfProblem::readInstanceFile(const std::string &_instance) {
     std::regex r_map = std::regex(R"(map_file=(.+))");
     std::regex r_agents = std::regex(R"(agents=(\d+))");
     std::regex r_well_formed = std::regex(R"(well_formed=(\d+))");
-    std::regex r_radiuses = std::regex("radiuses=(\\(?(\\d*[.]?\\d*,? ?)*\\)?)");
-    std::regex r_radiuses_random_uniform = std::regex(R"(radiuses_random_uniform=(\d*[.]?\d*),(\d*[.]?\d*))");
+    std::regex r_sizes = std::regex("sizes=(\\(?(\\d*[.]?\\d*,? ?)*\\)?)");
+    std::regex r_sizes_random_uniform = std::regex(R"(sizes_random_uniform=(\d*[.]?\d*),(\d*[.]?\d*))");
     std::regex r_seed = std::regex(R"(seed=(\d+))");
     std::regex r_random_problem = std::regex(R"(random_problem=(\d+))");
     std::regex r_max_timestep = std::regex(R"(max_timestep=(\d+))");
@@ -97,8 +97,8 @@ void LargeAgentsMapfProblem::readInstanceFile(const std::string &_instance) {
             num_agents = std::stoi(results[1].str());
             continue;
         }
-        // set radiuses
-        if (std::regex_match(line, results, r_radiuses_random_uniform) && !radius_done) {
+        // set sizes
+        if (std::regex_match(line, results, r_sizes_random_uniform) && !radius_done) {
           float r_min = std::stof(results[1].str());
 		  float r_max = std::stof(results[2].str());
           std::random_device rand_dev;
@@ -110,7 +110,7 @@ void LargeAgentsMapfProblem::readInstanceFile(const std::string &_instance) {
 		  radius_done = true;
 		  continue;
 		}
-        else if (std::regex_match(line, results, r_radiuses) && !radius_done) {
+        else if (std::regex_match(line, results, r_sizes) && !radius_done) {
             std::string result = results[1].str();
             std::string::iterator end_pos_ws = std::remove(result.begin(), result.end(), ' ');
             result.erase(end_pos_ws, result.end());
@@ -130,11 +130,11 @@ void LargeAgentsMapfProblem::readInstanceFile(const std::string &_instance) {
             }
             sizes.push_back(std::stof(result));
 
-            // check radiuses initialized
+            // check sizes initialized
             if (sizes.size() < num_agents) {
                 std::string warn_text = (
                     "only " + std::to_string(sizes.size()) +
-                     " radiuses given for " + std::to_string(num_agents) +
+                     " sizes given for " + std::to_string(num_agents) +
                      " agents, set remaining agents with default radius 0.45"
                 );
                 warn(warn_text);
@@ -234,11 +234,11 @@ void LargeAgentsMapfProblem::readInstanceFile(const std::string &_instance) {
 
 LargeAgentsMapfProblem::LargeAgentsMapfProblem(LargeAgentsMapfProblem *P, Config _config_s,
                                  Config _config_g, int _max_comp_time,
-                                 int _max_timestep, std::vector<float> *_radiuses)
+                                 int _max_timestep, std::vector<float> *_sizes)
         : MapfProblem(P->getInstanceFileName(), P->getG(), P->getMT(), _config_s,
                   _config_g, P->getNum(), _max_timestep, _max_comp_time),
           instance_initialized(false),
-          sizes(*_radiuses) {
+          sizes(*_sizes) {
 }
 
 LargeAgentsMapfProblem::LargeAgentsMapfProblem(LargeAgentsMapfProblem *P, int _max_comp_time)
@@ -404,7 +404,7 @@ void LargeAgentsMapfProblem::makeScenFile(const std::string &output_file) {
     log.open(output_file, std::ios::out);
     log << "map_file=" << grid->getMapFileName() << "\n";
     log << "agents=" << num_agents << "\n";
-    log << "radiuses=" << sizes[0];
+    log << "sizes=" << sizes[0];
     for (int it = 1; it < sizes.size(); it++) {
         log << ", " << sizes[it];
     }

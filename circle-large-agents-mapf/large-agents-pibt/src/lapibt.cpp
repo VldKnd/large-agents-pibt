@@ -54,7 +54,7 @@ void LAPIBT::run()
             0,                        // eta
             d,                        // initial distance
             getRandomFloat(0, 1, MT), // epsilon, tie-breaker
-            P->getRadius(i)           // Size (radius) of an agent
+            P->getSize(i)           // Size (radius) of an agent
         };
         allAgents.push_back(agent);
     }

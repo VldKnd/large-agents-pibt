@@ -182,7 +182,7 @@ bool Plan::validate(LargeAgentsMapfProblem* P) const
             return false;
         }
         for (int i = 0; i < num_agents; ++i) {
-            float r_i = P->getRadius(i);
+            float r_i = P->getSize(i);
             Node* v_i_t = get(t, i);
             Node* v_i_t_1 = get(t - 1, i);
             Nodes cands = v_i_t_1->neighbor;
@@ -193,7 +193,7 @@ bool Plan::validate(LargeAgentsMapfProblem* P) const
             }
 
             for (int j = i + 1; j < num_agents; ++j) {
-                float r_j = P->getRadius(j);
+                float r_j = P->getSize(j);
                 Node* v_j_t = get(t, j);
                 Node* v_j_t_1 = get(t - 1, j);
 

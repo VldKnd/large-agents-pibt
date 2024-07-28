@@ -1,8 +1,6 @@
 import argparse
 import math
 import os
-from calendar import c
-from gc import collect
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -71,7 +69,7 @@ not_keys = [
 
 map_name = solution['map_file']
 
-radiuses = np.array([float(r) for r in solution['radiuses'].split(',')])
+sizes = np.array([float(r) for r in solution['sizes'].split(',')])
     
 
 for key in solution.keys():
@@ -143,7 +141,7 @@ else:
     max_x, max_y = np.stack([coordinates.max((0, 1)), starts.max(0), goals.max(0)]).max(0)
 
 size = 6
-offset = math.ceil(max(radiuses)) + 2
+offset = math.ceil(max(sizes)) + 2
 scale = (2*offset+max_y - min_y) / (2*offset+max_x - min_x)
 min_, max_ = min(min_x, min_y), max(max_x, max_y)
 
@@ -173,7 +171,7 @@ ax.add_collection(obj_col)
 
 
 if visualisation_type == 'circle':
-    circles = [plt.Circle(pos, r, color=c, zorder=10) for pos, r, c in zip(coordinates[0], radiuses, agents_colors)]
+    circles = [plt.Circle(pos, r, color=c, zorder=10) for pos, r, c in zip(coordinates[0], sizes, agents_colors)]
 
     for circle in circles:
         ax.add_patch(circle)
@@ -195,7 +193,7 @@ if visualisation_type == 'circle':
         ani.save(save_output_path + file_name)
 
 else:
-    circles = [plt.Rectangle(pos, r, r, color=c, zorder=10) for pos, r, c in zip(coordinates[0], radiuses, agents_colors)]
+    circles = [plt.Rectangle(pos, r, r, color=c, zorder=10) for pos, r, c in zip(coordinates[0], sizes, agents_colors)]
 
     for circle in circles:
         ax.add_patch(circle)

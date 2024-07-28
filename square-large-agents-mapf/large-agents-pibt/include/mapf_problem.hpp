@@ -76,7 +76,7 @@ class LargeAgentsMapfProblem : public MapfProblem
 {
 private:
   const bool instance_initialized; // for memory manage
-  std::vector<float> sizes;     // To collect radiuses of robots
+  std::vector<float> sizes;     // To collect sizes of robots
 
   // set starts and goals randomly
   void setRandomStartsGoals();
@@ -96,7 +96,7 @@ public:
 
 
   LargeAgentsMapfProblem(LargeAgentsMapfProblem *P, Config _config_s, Config _config_g,
-                       int _max_comp_time, int _max_timestep, std::vector<float> *_radiuses);
+                       int _max_comp_time, int _max_timestep, std::vector<float> *_sizes);
   LargeAgentsMapfProblem(LargeAgentsMapfProblem *P, int _max_comp_time);
   ~LargeAgentsMapfProblem();
 

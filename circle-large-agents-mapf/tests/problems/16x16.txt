@@ -1,6 +1,6 @@
 map_file=16x16.map
 agents=2
-radiuses=1., 1.
+sizes=1., 1.
 seed=0
 random_problem=0
 max_timestep=2000
