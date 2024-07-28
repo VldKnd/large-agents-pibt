@@ -9,34 +9,20 @@ import numpy as np
 from matplotlib import animation, collections
 from utils import parse_tuples
 
-if True:
-    parser = argparse.ArgumentParser(
-        prog='PROG',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(
+    prog='PROG',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-s', '--solution', type=str, default='result.txt', help='Path to the solution in txt format.')
-    parser.add_argument('-c', '--color', type=int, default=1, help='Wether to use colors for agents or not. The colors are deactivated if the argument is set to 0')
-    parser.add_argument('-t', '--traces', type=int, default=1, help='Flag to show robot pathes. The pathes are deactivated if the argument is set to 0')
-    parser.add_argument('-a', '--add_steps', type=int, default=10, help='Additional steps after the program have been finished.')
-    parser.add_argument('-f', '--filename', type=str, default="", help='Name to save file in videos folder')
-    parser.add_argument('-v', '--verbose', type=int, default=0, help='Whether to print basic info about the solution')
-    parser.add_argument('-l', '--title', type=int, default=0, help='Whether to add title to the solution or not')
-    parser.add_argument('-p', '--frame_speed', type=int, default=50, help='Whats the length of the wait between frames')
+parser.add_argument('-s', '--solution', type=str, default='result.txt', help='Path to the solution in txt format.')
+parser.add_argument('-c', '--color', type=int, default=1, help='Wether to use colors for agents or not. The colors are deactivated if the argument is set to 0')
+parser.add_argument('-t', '--type', type=str, default="circle", help='Wether to show circle or square agents.')
+parser.add_argument('-a', '--add_steps', type=int, default=10, help='Additional steps after the program have been finished.')
+parser.add_argument('-f', '--filename', type=str, default="", help='Name to save file in videos folder')
+parser.add_argument('-v', '--verbose', type=int, default=0, help='Whether to print basic info about the solution')
+parser.add_argument('-l', '--title', type=int, default=0, help='Whether to add title to the solution or not')
+parser.add_argument('-p', '--frame_speed', type=int, default=50, help='Whats the length of the wait between frames')
 
-    args = parser.parse_args()
-else:
-    class Parser:
-        def __init__(self):
-            self.solution = 'sample.txt'
-            self.color = 1
-            self.traces = 1
-            self.title = 1
-            self.add_steps = 10
-            self.filename = ''
-            self.verbose = 0
-
-            
-    args = Parser()
+args = parser.parse_args()
 
 frame_speed = args.frame_speed
 solution_name = args.solution
@@ -45,8 +31,9 @@ assert solution_name in set(os.listdir("./solutions/")), 'Solution name is inval
 colorful = args.color != 0
 assert colorful in [False, True], 'The color argument is bool value'
 
-add_traces = args.traces != 0
-assert add_traces in [False, True], 'The traces argument is bool value'
+visualisation_type = args.type
+if visualisation_type not in ["circle", "square"]:
+    assert False, f"Type can only be circle or square. Found {visualisation_type}"
 
 time_steps_at_the_end = args.add_steps
 assert (type(time_steps_at_the_end) is int) and (time_steps_at_the_end >= 0), 'The additional timestep value has to be positive integer'
@@ -184,34 +171,49 @@ obj_col = collections.PatchCollection([
 obj_col.set_color(map_colors)
 ax.add_collection(obj_col)
 
-if add_traces:
-    traces = []
-    for j in range(coordinates.shape[1]):
-        tmp, = ax.plot([], [], linewidth=0.5, ls="--", color=agents_colors[j])
-        traces.append(tmp)
-    
-circles = [plt.Circle(pos, r, color=c, zorder=10) for pos, r, c in zip(coordinates[0], radiuses, agents_colors)]
 
-for circle in circles:
-    ax.add_patch(circle)
+if visualisation_type == 'circle':
+    circles = [plt.Circle(pos, r, color=c, zorder=10) for pos, r, c in zip(coordinates[0], radiuses, agents_colors)]
 
-def animate(k):
-    i = k
-    if add_traces:
-        for j in range(coordinates.shape[1]):
-            traces[j].set_data(coordinates[:i+1, j, 0], coordinates[:i+1, j, 1])
+    for circle in circles:
+        ax.add_patch(circle)
 
-    for (pos, circle) in zip(coordinates[i], circles):
-        circle.center = pos
+    def animate(k):
+        i = k
 
-    if args.title:
-        ax.set_title(map_name + "\n t : {}".format(k))
+        for (pos, circle) in zip(coordinates[i], circles):
+            circle.center = pos
 
-ani = animation.FuncAnimation(
-    fig, animate, frames=t_end, interval=frame_speed)
+        if args.title:
+            ax.set_title(map_name + "\n t : {}".format(k))
 
-if file_name:
-    writervideo = animation.FFMpegWriter()
-    ani.save(save_output_path + file_name)
+    ani = animation.FuncAnimation(
+        fig, animate, frames=t_end, interval=frame_speed)
+
+    if file_name:
+        writervideo = animation.FFMpegWriter()
+        ani.save(save_output_path + file_name)
+
+else:
+    circles = [plt.Rectangle(pos, r, r, color=c, zorder=10) for pos, r, c in zip(coordinates[0], radiuses, agents_colors)]
+
+    for circle in circles:
+        ax.add_patch(circle)
+
+    def animate(k):
+        i = k
+
+        for (pos, circle) in zip(coordinates[i], circles):
+            circle.xy = pos
+
+        if args.title:
+            ax.set_title(map_name + "\n t : {}".format(k))
+
+    ani = animation.FuncAnimation(
+        fig, animate, frames=t_end, interval=frame_speed)
+
+    if file_name:
+        writervideo = animation.FFMpegWriter()
+        ani.save(save_output_path + file_name)
 
 plt.show()

@@ -178,17 +178,10 @@ bool LAPIBT::collisionConflict(Agent *agent, const std::vector<Agent *> &allAgen
                 float other_agent_size = ceil(other_agent->size);
 
                 if (
-                    (
-                        other_agent_pos_x >= agent_pos_x &&
-                        other_agent_pos_x < agent_pos_x + agent_size &&
-                        other_agent_pos_y >= agent_pos_y &&
-                        other_agent_pos_y < agent_pos_y + agent_size
-                    ) || (
-                        agent_pos_x >= other_agent_pos_x &&
-                        agent_pos_x < other_agent_pos_x + other_agent_size &&
-                        agent_pos_y >= other_agent_pos_y &&
-                        agent_pos_y < other_agent_pos_y + other_agent_size
-                    )
+                    agent_pos_x > other_agent_pos_x - agent_size &&
+                    agent_pos_x < other_agent_pos_x + other_agent_size &&
+                    agent_pos_y > other_agent_pos_y - agent_size &&
+                    agent_pos_y < other_agent_pos_y + other_agent_size
                 )
                     return true;
 
@@ -218,17 +211,10 @@ bool LAPIBT::collisionConflictWithAgentsInConflict(Agent *child_agent, Agent *pa
             float other_agent_size = ceil(other_agent->size);
 
             if (
-                (
-                    other_agent_pos_x >= child_agent_pos_x &&
-                    other_agent_pos_x < child_agent_pos_x + child_agent_size &&
-                    other_agent_pos_y >= child_agent_pos_y &&
-                    other_agent_pos_y < child_agent_pos_y + child_agent_size
-                ) || (
-                    child_agent_pos_x >= other_agent_pos_x &&
-                    child_agent_pos_x < other_agent_pos_x + other_agent_size &&
-                    child_agent_pos_y >= other_agent_pos_y &&
-                    child_agent_pos_y < other_agent_pos_y + other_agent_size
-                )
+                child_agent_pos_x > other_agent_pos_x - child_agent_size &&
+                child_agent_pos_x < other_agent_pos_x + other_agent_size &&
+                child_agent_pos_y > other_agent_pos_y - child_agent_size &&
+                child_agent_pos_y < other_agent_pos_y + other_agent_size
             )
                 return true;
 
@@ -239,10 +225,12 @@ bool LAPIBT::collisionConflictWithAgentsInConflict(Agent *child_agent, Agent *pa
 
 bool LAPIBT::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAgents)
 {
+
+
     int agent_pos_x = agent->path.back()->pos.x;
     int agent_pos_y = agent->path.back()->pos.y;
     float agent_size = ceil(agent->size);
-
+    
     setOfAgentsInConflict.insert(agent);
 
     std::vector<std::tuple<Agent *, int>> vector_of_agents_and_steps = {};
@@ -263,17 +251,10 @@ bool LAPIBT::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAg
             setOfAgentsInConflict.find(other_agent) == setOfAgentsInConflict.end() &&
             (other_agent->path).size() < (agent->path).size() &&
             (
-                (
-                    other_agent_pos_x >= agent_pos_x &&
-                    other_agent_pos_x < agent_pos_x + agent_size &&
-                    other_agent_pos_y >= agent_pos_y &&
-                    other_agent_pos_y < agent_pos_y + agent_size
-                ) || (
-                    agent_pos_x >= other_agent_pos_x &&
-                    agent_pos_x < other_agent_pos_x + other_agent_size &&
-                    agent_pos_y >= other_agent_pos_y &&
-                    agent_pos_y < other_agent_pos_y + other_agent_size
-                )
+                agent_pos_x > other_agent_pos_x - agent_size &&
+                agent_pos_x < other_agent_pos_x + other_agent_size &&
+                agent_pos_y > other_agent_pos_y - agent_size &&
+                agent_pos_y < other_agent_pos_y + other_agent_size
             )
         )
         {

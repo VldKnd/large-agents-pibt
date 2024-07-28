@@ -205,14 +205,9 @@ bool Plan::validate(LargeAgentsMapfProblem* P) const
 
                 if (
                     (
-                      v_j_pos_x >= v_i_pos_x &&
-                      v_j_pos_x < v_i_pos_x + s_i &&
-                      v_j_pos_y >= v_i_pos_y &&
-                      v_j_pos_y < v_i_pos_y + s_i
-                    ) || (
-                      v_i_pos_x >= v_j_pos_x &&
+                      v_i_pos_x > v_j_pos_x - s_i &&
                       v_i_pos_x < v_j_pos_x + s_j &&
-                      v_i_pos_y >= v_j_pos_y &&
+                      v_i_pos_y > v_j_pos_y - s_i &&
                       v_i_pos_y < v_j_pos_y + s_j
                     )
                   ) {
