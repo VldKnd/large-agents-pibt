@@ -2,7 +2,7 @@
 #include "../include/graph_utils.hpp"
 
 bool checkIfNodeExistInRadiusOnGrid(Graph* G, int x, int y, float s) {
-    int size = floor(s);
+    int size = ceil(s);
 
     if (size == 0) {
         return G->existNode(x, y);

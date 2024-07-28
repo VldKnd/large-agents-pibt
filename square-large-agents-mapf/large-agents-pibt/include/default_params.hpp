@@ -7,4 +7,4 @@ static constexpr int DEFAULT_MAX_TIMESTEP = 5000;
 static constexpr int DEFAULT_MAX_COMP_TIME = 60000;
 static constexpr float DEFAULT_TASK_FREQUENCY = 1;
 static constexpr int DEFAULT_TASK_NUM = 10;
-static constexpr int DEFAULT_INHERITANCE_DEPTH = 10;
+static constexpr int DEFAULT_INHERITANCE_DEPTH = 1000;

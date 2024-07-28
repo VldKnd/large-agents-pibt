@@ -256,16 +256,25 @@ LargeAgentsMapfProblem::~LargeAgentsMapfProblem() {
     }
 }
 
-bool LargeAgentsMapfProblem::isInCollision(Config *C, int id, float r) {
+bool LargeAgentsMapfProblem::isInCollision(Config *C, int id, float s) {
     Grid *grid = reinterpret_cast<Grid *>(G);
     int y = std::ceil(id / grid->getHeight());
     int x = (id - y);
-    return isInCollision(C, x, y, r);
+    return isInCollision(C, x, y, s);
 }
 
-bool LargeAgentsMapfProblem::isInCollision(Config *C, int x, int y, float r) {
+bool LargeAgentsMapfProblem::isInCollision(Config *C, int x, int y, float s) {
     for (int i = 0; i < (*C).size(); i++) {
-        if ((*C)[i]->pos.euclideanDist(Pos(x, y)) < r + sizes[i]) return true;
+        int i_pos_x = (*C)[i]->pos.x;
+        int i_pos_y = (*C)[i]->pos.y;
+        float i_size = ceil(sizes[i]);
+
+        if (
+                x > i_pos_x - s &&
+                x < i_pos_x + i_size &&
+                y > i_pos_y - s &&
+                y < i_pos_y + i_size
+            ) return true;
     }
     return false;
 }

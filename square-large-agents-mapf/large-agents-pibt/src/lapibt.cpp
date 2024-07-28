@@ -129,7 +129,7 @@ void LAPIBT::mainLAPIBT(Agent *agent, const std::vector<Agent *> &allAgents)
 
     std::vector<Node *> current_nodes_neighbours = (agent->path).back()->neighbor;
     std::sort(current_nodes_neighbours.begin(), current_nodes_neighbours.end(), closestNodeToTheGoal);
-
+    
     for (auto perpective_next_node : current_nodes_neighbours)
     {
         if (pathDist(agent->id, perpective_next_node) == max_timestep + 1)
