@@ -1,0 +1,8 @@
+map_file=Paris_1_256.map
+agents=300
+sizes_random_uniform=0.1,2.
+seed=5
+random_problem=0
+max_timestep=2000
+max_comp_time=5000
+well_formed=1
