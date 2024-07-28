@@ -2,9 +2,6 @@
 
 Simple visualisation for PIBT solutions, using matplotlib animation library.
 
-
-![1000agents](./videos/hello.gif)
-
 Install dependences
 ```
 pip install -r requirements.txt
