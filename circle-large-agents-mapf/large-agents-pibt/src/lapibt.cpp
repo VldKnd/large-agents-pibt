@@ -4,6 +4,7 @@
 #include <unordered_set>
 
 #include "../include/lapibt.hpp"
+#include "../include/exceptions.hpp"
 
 const std::string LAPIBT::SOLVER_NAME = "Free Space Priority Inheritance With Backtracking V2 (LAPIBT)";
 
@@ -73,7 +74,14 @@ void LAPIBT::run()
         for (auto agent : allAgents)
         {
             if ((agent->path).size() == 1){
-                mainLAPIBT(agent, allAgents);
+                try {
+                    mainLAPIBT(agent, allAgents);
+                } catch (too_high_compute_time_exception& e) {
+                    info("Exception caught, Message: ", e.message());
+                    for (auto a : allAgents)
+                        delete a;
+                    return;
+                }
             }
         }
 
@@ -157,6 +165,8 @@ void LAPIBT::mainLAPIBT(Agent *agent, const std::vector<Agent *> &allAgents)
 
 bool LAPIBT::collisionConflict(Agent *agent, const std::vector<Agent *> &allAgents)
 {
+    checkIfComputationTimeExceeded();
+
     for (auto other_agent : allAgents)
     {
         if (
@@ -179,6 +189,8 @@ bool LAPIBT::collisionConflict(Agent *agent, const std::vector<Agent *> &allAgen
 
 bool LAPIBT::collisionConflictWithAgentsInConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents)
 {
+    checkIfComputationTimeExceeded();
+
     for (auto other_agent : setOfAgentsInConflict)
     {
         int offset = parent_agent->id == other_agent->id;
@@ -196,6 +208,8 @@ bool LAPIBT::collisionConflictWithAgentsInConflict(Agent *child_agent, Agent *pa
 
 bool LAPIBT::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAgents)
 {
+    checkIfComputationTimeExceeded();
+    
     setOfAgentsInConflict.insert(agent);
 
     std::vector<std::tuple<Agent *, int>> vector_of_agents_and_steps = {};

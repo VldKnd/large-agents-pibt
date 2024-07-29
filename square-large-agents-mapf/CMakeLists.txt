@@ -11,10 +11,3 @@ add_subdirectory(./large-agents-pibt)
 add_executable(large-agents-mapf large-agents-mapf.cpp)
 target_compile_features(large-agents-mapf PUBLIC cxx_std_17)
 target_link_libraries(large-agents-mapf lib-mapf)
-
-# format
-add_custom_target(clang-format
-  COMMAND clang-format -i
-  ../large-agents-pibt/include/*.hpp
-  ../large-agents-pibt/src/*.cpp
-  ../large-agents-mapf.cpp)

@@ -142,6 +142,7 @@ public:
     int pathDist(int i, Node *s) const;
     int pathDist(int i) const;
     void createDistanceTable();
+    void checkIfComputationTimeExceeded();
     explicit LargeAgentsMAPFSolver(LargeAgentsMapfProblem *P);
     ~LargeAgentsMAPFSolver() override;
 

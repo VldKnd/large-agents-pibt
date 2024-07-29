@@ -6,6 +6,7 @@
 
 #include "../include/graph_utils.hpp"
 #include "../include/lapibt.hpp"
+#include "../include/exceptions.hpp"
 
 MinimumSolver::MinimumSolver(MapfProblem* _P)
     : solver_name(""),
@@ -332,3 +333,8 @@ std::unique_ptr<LargeAgentsMAPFSolver> getSolver(const std::string &solver_name,
     solver->setVerbose(verbose);
     return solver;
 }
+
+void LargeAgentsMAPFSolver::checkIfComputationTimeExceeded() {
+    if (getSolverElapsedTime() > max_comp_time)
+        throw too_high_compute_time_exception();
+};

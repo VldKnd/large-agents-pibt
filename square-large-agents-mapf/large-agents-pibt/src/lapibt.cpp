@@ -2,8 +2,10 @@
 #include <map>
 #include <exception>
 #include <unordered_set>
+#include <stdexcept>
 
 #include "../include/lapibt.hpp"
+#include "../include/exceptions.hpp"
 
 const std::string LAPIBT::SOLVER_NAME = "Free Space Priority Inheritance With Backtracking V2 (LAPIBT)";
 
@@ -73,7 +75,14 @@ void LAPIBT::run()
         for (auto agent : allAgents)
         {
             if ((agent->path).size() == 1){
-                mainLAPIBT(agent, allAgents);
+                try {
+                    mainLAPIBT(agent, allAgents);
+                } catch (too_high_compute_time_exception& e) {
+                    info("Exception caught, Message: ", e.message());
+                    for (auto a : allAgents)
+                        delete a;
+                    return;
+                }
             }
         }
 
@@ -103,9 +112,16 @@ void LAPIBT::run()
 
         if (timestep >= max_timestep)
         {
-            std::cout << "Too much steps!\n";
+            info("Too much steps!");
             break;
         }
+
+        if (getSolverElapsedTime() > max_comp_time)
+        {
+            info("Computation time is too big!");
+            break;
+        }
+
     }
 
     for (auto a : allAgents)
@@ -157,6 +173,8 @@ void LAPIBT::mainLAPIBT(Agent *agent, const std::vector<Agent *> &allAgents)
 
 bool LAPIBT::collisionConflict(Agent *agent, const std::vector<Agent *> &allAgents)
 {
+    checkIfComputationTimeExceeded();
+
     int agent_pos_x = agent->path.back()->pos.x;
     int agent_pos_y = agent->path.back()->pos.y;
     float agent_size = ceil(agent->size);
@@ -193,6 +211,7 @@ bool LAPIBT::collisionConflict(Agent *agent, const std::vector<Agent *> &allAgen
 
 bool LAPIBT::collisionConflictWithAgentsInConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents)
 {
+    checkIfComputationTimeExceeded();
     
     int child_agent_pos_x = child_agent->path.back()->pos.x;
     int child_agent_pos_y = child_agent->path.back()->pos.y;
@@ -225,7 +244,7 @@ bool LAPIBT::collisionConflictWithAgentsInConflict(Agent *child_agent, Agent *pa
 
 bool LAPIBT::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAgents)
 {
-
+    checkIfComputationTimeExceeded();
 
     int agent_pos_x = agent->path.back()->pos.x;
     int agent_pos_y = agent->path.back()->pos.y;
