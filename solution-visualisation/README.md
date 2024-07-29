@@ -1,11 +1,15 @@
-# pibt_visualizer
+# LaPIBT Visualisation
 
 Simple visualisation for PIBT solutions, using matplotlib animation library.
 
-Install dependences
+## Install Dependencies
+We use [poetry](https://python-poetry.org/docs/) to manage python dependencies.
+
+To install dependencies run:
 ```
-pip install -r requirements.txt
+poetry lock && poetry install
 ```
+
 Main code is in visualize.py
 ```
 python visualize.py -h
@@ -26,4 +30,12 @@ optional arguments:
                         Additional steps after the program have been finished. (default: 10)
   -f FILENAME, --filename FILENAME
                         Name to save file in videos folder (default: )
+```
+To run code use:
+```bash
+$ poetry run python visualize.py [OPTIONS]
+```
+For example:
+```bash
+$ poetry run python visualize.py -s solution.txt -t square
 ```
