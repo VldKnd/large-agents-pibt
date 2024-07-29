@@ -9,7 +9,8 @@ from utils import parse_tuples
 
 parser = argparse.ArgumentParser(
     prog='PROG',
-    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter
+)
 
 parser.add_argument('-s', '--solution', type=str, default='result.txt', help='Path to the solution in txt format.')
 parser.add_argument('-c', '--color', type=int, default=1, help='Wether to use colors for agents or not. The colors are deactivated if the argument is set to 0')

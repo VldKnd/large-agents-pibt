@@ -19,8 +19,9 @@ optional arguments:
                         Path to the solution in txt format. (default: result.txt)
   -c COLOR, --color COLOR
                         Wether to use colors for agents or not. The colors are deactivated if the argument is set to 0 (default: 1)
-  -t TRACES, --traces TRACES
-                        Flag to show robot pathes. The pathes are deactivated if the argument is set to 0 (default: 1)
+  -t TYPE, --type TYPE
+                        Type of agents used in solution, it can be either "circle" or "square".
+                        (default: "cirlce")
   -a ADD_STEPS, --add_steps ADD_STEPS
                         Additional steps after the program have been finished. (default: 10)
   -f FILENAME, --filename FILENAME
