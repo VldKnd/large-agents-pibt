@@ -9,9 +9,7 @@ def parse_tuples(string):
             )
         except ValueError:
             pass
-
     return res
-
 
 ### For Polygone Construction
 def augment_border(text, symbol = "T"):
