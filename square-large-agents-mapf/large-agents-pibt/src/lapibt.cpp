@@ -56,7 +56,7 @@ void LAPIBT::run()
             0,                        // eta
             d,                        // initial distance
             getRandomFloat(0, 1, MT), // epsilon, tie-breaker
-            P->getSize(i)           // Size (radius) of an agent
+            P->getSize(i)             // Size (radius) of an agent
         };
         allAgents.push_back(agent);
     }
@@ -134,7 +134,7 @@ void LAPIBT::mainLAPIBT(Agent *agent, const std::vector<Agent *> &allAgents)
     {
         (agent->path).push_back((agent->path).back());
         return;
-    }
+    };
 
     auto closestNodeToTheGoal = [&, agent](Node *const node_lhs, Node *const node_rhs)
     {
@@ -159,7 +159,9 @@ void LAPIBT::mainLAPIBT(Agent *agent, const std::vector<Agent *> &allAgents)
             continue;
         }
 
-        if (inheritanceConflict(agent, allAgents))
+        if (
+            inheritanceConflict(agent, allAgents) &&
+            solveInheritanceConflict(agent, allAgents).empty())
         {
             (agent->path).pop_back();
             continue;
@@ -169,6 +171,38 @@ void LAPIBT::mainLAPIBT(Agent *agent, const std::vector<Agent *> &allAgents)
     }
 
     (agent->path).push_back((agent->path).back());
+}
+
+bool LAPIBT::collisionConflict(Agent *child_agent, Agent* parent_agent, const std::vector<Agent *> &allAgents)
+{
+    checkIfComputationTimeExceeded();
+
+    int child_agent_pos_x = child_agent->path.back()->pos.x;
+    int child_agent_pos_y = child_agent->path.back()->pos.y;
+    float child_agent_size = ceil(child_agent->size);
+
+    for (auto other_agent : setOfAgentsInConflict)
+    {
+        int offset = other_agent->id == parent_agent->id;
+        for (
+            auto node_in_other_agents_path = (other_agent->path).begin();
+            node_in_other_agents_path != (other_agent->path).end() - offset;
+            node_in_other_agents_path++)
+        {
+            int other_agent_pos_x = (*node_in_other_agents_path)->pos.x;
+            int other_agent_pos_y = (*node_in_other_agents_path)->pos.y;
+            float other_agent_size = ceil(other_agent->size);
+
+            if (
+                child_agent_pos_x > other_agent_pos_x - child_agent_size &&
+                child_agent_pos_x < other_agent_pos_x + other_agent_size &&
+                child_agent_pos_y > other_agent_pos_y - child_agent_size &&
+                child_agent_pos_y < other_agent_pos_y + other_agent_size
+            )
+                return true;
+        }
+    }
+    return false;
 }
 
 bool LAPIBT::collisionConflict(Agent *agent, const std::vector<Agent *> &allAgents)
@@ -202,41 +236,7 @@ bool LAPIBT::collisionConflict(Agent *agent, const std::vector<Agent *> &allAgen
                     agent_pos_y < other_agent_pos_y + other_agent_size
                 )
                     return true;
-
             }
-        }
-    }
-    return false;
-}
-
-bool LAPIBT::collisionConflictWithAgentsInConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents)
-{
-    checkIfComputationTimeExceeded();
-    
-    int child_agent_pos_x = child_agent->path.back()->pos.x;
-    int child_agent_pos_y = child_agent->path.back()->pos.y;
-    float child_agent_size = ceil(child_agent->size);
-
-    for (auto other_agent : setOfAgentsInConflict)
-    {
-        int offset = parent_agent->id == other_agent->id;
-        for (
-            auto node_in_other_agents_path = (other_agent->path).begin();
-            node_in_other_agents_path != (other_agent->path).end() - offset;
-            node_in_other_agents_path++)
-        {
-            int other_agent_pos_x = (*node_in_other_agents_path)->pos.x;
-            int other_agent_pos_y = (*node_in_other_agents_path)->pos.y;
-            float other_agent_size = ceil(other_agent->size);
-
-            if (
-                child_agent_pos_x > other_agent_pos_x - child_agent_size &&
-                child_agent_pos_x < other_agent_pos_x + other_agent_size &&
-                child_agent_pos_y > other_agent_pos_y - child_agent_size &&
-                child_agent_pos_y < other_agent_pos_y + other_agent_size
-            )
-                return true;
-
         }
     }
     return false;
@@ -250,10 +250,40 @@ bool LAPIBT::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAg
     int agent_pos_y = agent->path.back()->pos.y;
     float agent_size = ceil(agent->size);
     
+    for (auto other_agent : allAgents)
+    {
+        int other_agent_pos_x = ((other_agent->path).back())->pos.x;
+        int other_agent_pos_y = ((other_agent->path).back())->pos.y;
+        float other_agent_size = ceil(other_agent->size);
+        if (
+            other_agent->id != agent->id &&
+            (other_agent->path).size() < (agent->path).size() &&
+            (
+                agent_pos_x > other_agent_pos_x - agent_size &&
+                agent_pos_x < other_agent_pos_x + other_agent_size &&
+                agent_pos_y > other_agent_pos_y - agent_size &&
+                agent_pos_y < other_agent_pos_y + other_agent_size
+            )
+        )
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+std::map<LAPIBT::Agent*, LAPIBT::PathState> LAPIBT::solveInheritanceConflict(Agent *agent, const std::vector<Agent *> &allAgents)
+{
+    checkIfComputationTimeExceeded();
+
+    int agent_pos_x = agent->path.back()->pos.x;
+    int agent_pos_y = agent->path.back()->pos.y;
+    float agent_size = ceil(agent->size);
+    
     setOfAgentsInConflict.insert(agent);
 
-    std::vector<std::tuple<Agent *, int>> vector_of_agents_and_steps = {};
-    int initial_path_size = (agent ->path).size();
+    std::map<Agent*, PathState> path_states_before_conflict = {};
 
     auto agent_iterator = allAgents.begin();
     while (agent_iterator != allAgents.end())
@@ -267,7 +297,6 @@ bool LAPIBT::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAg
 
         if (
             other_agent->id != agent->id &&
-            setOfAgentsInConflict.find(other_agent) == setOfAgentsInConflict.end() &&
             (other_agent->path).size() < (agent->path).size() &&
             (
                 agent_pos_x > other_agent_pos_x - agent_size &&
@@ -277,51 +306,40 @@ bool LAPIBT::inheritanceConflict(Agent *agent, const std::vector<Agent *> &allAg
             )
         )
         {
-            int steps_in_inheritance_conflict = solveInheritanceConflict(other_agent, agent, allAgents);
+            std::map<Agent*, PathState> new_path_states_before_conflict = escapeInheritanceConflict(other_agent, agent, allAgents);
 
-            if (steps_in_inheritance_conflict != 0)
+            if (new_path_states_before_conflict.empty())
             {
-                vector_of_agents_and_steps.push_back(
-                    {other_agent, steps_in_inheritance_conflict});
-
-                while ((agent ->path).size() < (other_agent->path).size()) {
-                    (agent->path).insert((agent->path).end() - 1, *((agent->path).end() - 2));
-                }
-            }
-            else
-            {
-                while (vector_of_agents_and_steps.size())
+                for (auto const& [_agent, path_state] : path_states_before_conflict)
                 {
-                    std::tuple<Agent *, int> agent_and_steps =
-                        vector_of_agents_and_steps.back();
-                    vector_of_agents_and_steps.pop_back();
-                    Agent *agent_in_iheritance_conflict = std::get<0>(agent_and_steps);
-                    int steps_in_inheritance_conflict = std::get<1>(agent_and_steps);
-
-                    for (int i = steps_in_inheritance_conflict; i--;)
-                    {
-                        (agent_in_iheritance_conflict->path).pop_back();
-                    }
-                }
-
-                while ((agent->path).size() > initial_path_size) {
-                    (agent->path).erase((agent->path).end() - 2);
+                    (_agent->path).resize(path_state.size - 1);
+                    (_agent->path).push_back(path_state.last_node_in_path);
                 }
 
                 setOfAgentsInConflict.erase(agent);
-                return true;
+                return {};
+            }
+            else
+            {
+                for (auto const& [_agent, path_state] : new_path_states_before_conflict)
+                {
+                    if (path_states_before_conflict.find(_agent) == path_states_before_conflict.end()) {
+                        path_states_before_conflict[_agent] = path_state;
+                    }
+                }
+                agent_iterator = allAgents.begin();
             }
         }
     }
 
     setOfAgentsInConflict.erase(agent);
-    return false;
+    return path_states_before_conflict;
 }
 
-int LAPIBT::solveInheritanceConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents)
+std::map<LAPIBT::Agent*, LAPIBT::PathState> LAPIBT::escapeInheritanceConflict(Agent *child_agent, Agent *parent_agent, const std::vector<Agent *> &allAgents)
 {
     if (setOfAgentsInConflict.size() > inheritanceDepth)
-        return 0;
+        return {};
 
     Nodes nodes_outside_of_inheritance_conflict = getNodesToAvoidInheritanceConflict(child_agent, parent_agent);
 
@@ -335,18 +353,18 @@ int LAPIBT::solveInheritanceConflict(Agent *child_agent, Agent *parent_agent, co
         return d_v < d_u;
     });
 
+    std::map<Agent*, PathState> path_states_before_conflict = {};
     std::unordered_set<int> ids_of_visited_nodes = {};
     bool next_node_found_during_greedy_bfs = false;
-    int counter_of_steps_made = 0;
+    int max_steps_allowed = 3*std::ceil(std::max(child_agent->size, parent_agent->size));
 
     for (auto node_to_reach : nodes_outside_of_inheritance_conflict)
     {
         if (
             pathDist(child_agent->id, node_to_reach) == max_timestep + 1 ||
-            getRandomFloat(0., 1, MT) < 0.5 /// Is needed to prevent deadlocks
+            getRandomFloat(0., 1, MT) < 0.175 /// Is needed to prevent deadlocks
         ) continue;
 
-        counter_of_steps_made = 0;
         ids_of_visited_nodes.clear();
         ids_of_visited_nodes.insert((child_agent->path).back()->id);
 
@@ -356,6 +374,12 @@ int LAPIBT::solveInheritanceConflict(Agent *child_agent, Agent *parent_agent, co
             float distance_node_rhs = node_to_reach->euclideanDist(node_rhs);
             return distance_node_lhs < distance_node_rhs;
         };
+
+        path_states_before_conflict[child_agent] = {
+            (child_agent->path).size(),
+            (child_agent->path).back()
+        };
+        int step_counter = 0;
 
         while ((child_agent->path).back()->id != node_to_reach->id)
         {
@@ -367,54 +391,99 @@ int LAPIBT::solveInheritanceConflict(Agent *child_agent, Agent *parent_agent, co
             {
                 if (
                     ids_of_visited_nodes.find(neighbour_node->id) != ids_of_visited_nodes.end() ||
-                    !checkIfNodeExistInRadiusOnGrid(G, neighbour_node->pos.x, neighbour_node->pos.y, child_agent->size))
+                    !checkIfNodeExistInRadiusOnGrid(
+                        G,
+                        neighbour_node->pos.x,
+                        neighbour_node->pos.y,
+                        child_agent->size
+                    ))
                 {
+                    ids_of_visited_nodes.insert(neighbour_node->id);
+                    continue;
+                }
+
+                if (step_counter > max_steps_allowed) {
                     break;
                 }
 
                 (child_agent->path).push_back(neighbour_node);
-
-                if (collisionConflict(child_agent, allAgents))
+                for (auto conflicting_agent: setOfAgentsInConflict) {
+                    if (conflicting_agent->path.size() <= child_agent->path.size()) {
+                        for (auto conflicting_agent: setOfAgentsInConflict) {
+                            if (
+                                path_states_before_conflict.find(conflicting_agent) ==
+                                path_states_before_conflict.end()
+                            ){
+                                path_states_before_conflict[conflicting_agent] = {
+                                    (conflicting_agent->path).size(),
+                                    (conflicting_agent->path).back()
+                                };
+                            }
+                            conflicting_agent->wait();
+                        }
+                    }
+                }
+                
+                if (
+                    collisionConflict(child_agent, allAgents) ||
+                    collisionConflict(child_agent, parent_agent, allAgents)
+                    )
                 {
                     ids_of_visited_nodes.insert(neighbour_node->id);
                     (child_agent->path).pop_back();
-                    break;
+                    continue;
                 }
 
-                if (collisionConflictWithAgentsInConflict(child_agent, parent_agent, allAgents))
-                {
-                    ids_of_visited_nodes.insert(neighbour_node->id);
-                    (child_agent->path).pop_back();
-                    break;
-                }
+                if (inheritanceConflict(child_agent, allAgents)){
+                    std::map<Agent*, PathState> new_path_states_before_conflict = solveInheritanceConflict(
+                        child_agent, allAgents
+                    );
 
-                if (inheritanceConflict(child_agent, allAgents))
-                {
-                    ids_of_visited_nodes.insert(neighbour_node->id);
-                    (child_agent->path).pop_back();
-                    break;
+                    if (new_path_states_before_conflict.empty())
+                    {
+                        ids_of_visited_nodes.insert(neighbour_node->id);
+                        (child_agent->path).pop_back();
+                        break;
+                    } else {
+                        for (auto const& [agent, path_state] : new_path_states_before_conflict)
+                        {
+                            if (path_states_before_conflict.find(agent) == path_states_before_conflict.end()) {
+                                path_states_before_conflict[agent] = path_state;
+                            }
+                        }
+                    }
                 }
-
+                
+                for (auto const& [moved_agent, _] : path_states_before_conflict) {
+                    if (
+                        setOfAgentsInConflict.find(moved_agent) == setOfAgentsInConflict.end() &&
+                        moved_agent->id != child_agent->id
+                    ) {
+                        moved_agent->path.push_back(moved_agent->path.back());
+                    }
+                }
                 ids_of_visited_nodes.insert(neighbour_node->id);
                 next_node_found_during_greedy_bfs = true;
-                counter_of_steps_made++;
+                step_counter++;
                 break;
             }
 
             if (!next_node_found_during_greedy_bfs)
             {
-                for (int i = counter_of_steps_made; i--;)
+                for (auto const& [agent, path_state] : path_states_before_conflict)
                 {
-                    (child_agent->path).pop_back();
+                    (agent->path).resize(path_state.size - 1);
+                    (agent->path).push_back(path_state.last_node_in_path);
                 }
+                path_states_before_conflict.clear();
                 break;
             }
         }
 
         if ((child_agent->path).back()->id == node_to_reach->id)
-            return counter_of_steps_made;
+            return path_states_before_conflict;
     }
-    return 0;
+    return {};
 }
 
 Nodes LAPIBT::getNodesToAvoidInheritanceConflict(const Agent *child_agent, const Agent *parent_agent)
@@ -427,17 +496,20 @@ Nodes LAPIBT::getNodesToAvoidInheritanceConflict(const Agent *child_agent, const
 
     Nodes border;
 
-    for (int delta = -child_agent_size; delta < parent_agent_size; delta++){
-        if (G->existNode(x + delta, y - child_agent_size))
-            border.push_back(G->getNode(x + delta, y - child_agent_size));
-        if (G->existNode(x + delta, y + parent_agent_size))
-            border.push_back(G->getNode(x + delta, y + parent_agent_size));
+    int deltaIncrement = std::max(1, int(std::floor((parent_agent_size+child_agent_size)/2)));
 
-        if (G->existNode(x - child_agent_size, y + delta))
-            border.push_back(G->getNode(x - child_agent_size, y + delta));
-        if (G->existNode(x + parent_agent_size, y + delta))
-            border.push_back(G->getNode(x + parent_agent_size, y + delta));
-    }
+    if (G->existNode(x + deltaIncrement, y - child_agent_size))
+        border.push_back(G->getNode(x + deltaIncrement, y - child_agent_size));
+
+    if (G->existNode(x + deltaIncrement, y + parent_agent_size))
+        border.push_back(G->getNode(x + deltaIncrement, y + parent_agent_size));
+
+    if (G->existNode(x - child_agent_size, y + deltaIncrement))
+        border.push_back(G->getNode(x - child_agent_size, y + deltaIncrement));
+
+    if (G->existNode(x + parent_agent_size, y + deltaIncrement))
+        border.push_back(G->getNode(x + parent_agent_size, y + deltaIncrement));
+
 
     return border;
 }

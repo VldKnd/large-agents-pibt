@@ -1,0 +1,11 @@
+num_agents=100
+min_radius=0.1
+max_radius=3
+iterations=2
+succeses=1
+failures=1
+costs=33948
+lb_costs=21354
+steps=704
+lb_steps=704
+time=172

@@ -1,0 +1,6 @@
+num_agents=256
+min_radius=0.1
+max_radius=3
+iterations=100
+succeses=0
+failures=100

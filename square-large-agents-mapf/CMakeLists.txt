@@ -8,6 +8,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 add_subdirectory(./large-agents-pibt)
 
+# add_executable(large-agents-mapf large-agents-mapf.cpp)
 add_executable(large-agents-mapf large-agents-mapf.cpp)
 target_compile_features(large-agents-mapf PUBLIC cxx_std_17)
 target_link_libraries(large-agents-mapf lib-mapf)

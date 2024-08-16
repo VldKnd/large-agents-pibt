@@ -57,6 +57,31 @@ LargeAgentsMapfProblem::LargeAgentsMapfProblem(const std::string& _instance)
     readInstanceFile(_instance);
 }
 
+std::vector<float> LargeAgentsMapfProblem::getMinMaxRadiuses() {
+    std::ifstream file(instance);
+    std::string line;
+    std::smatch results;
+    std::regex r_sizes_random_uniform = std::regex(R"(sizes_random_uniform=(\d*[.]?\d*),(\d*[.]?\d*))");
+    
+    while (getline(file, line)) {
+        if (*(line.end() - 1) == 0x0d) line.pop_back();
+
+        if (std::regex_match(line, results, r_sizes_random_uniform)) {
+          float r_min = std::stof(results[1].str());
+		  float r_max = std::stof(results[2].str());
+          std::random_device rand_dev;
+          std::mt19937 generator(rand_dev());
+          std::uniform_real_distribution<float> distr(r_min, r_max);
+          for (size_t i = 0; i < num_agents; i++){
+            sizes.push_back(distr(generator));
+          }
+		  return { r_min, r_max };
+		}
+    }
+
+    return {0., 0.};
+}
+
 void LargeAgentsMapfProblem::readInstanceFile(const std::string &_instance) {
     // read instance file
     std::ifstream file(instance);

@@ -94,6 +94,7 @@ public:
   LargeAgentsMapfProblem(const std::string &_instance);
   LargeAgentsMapfProblem(const std::string& _instance, const int seed);
 
+  std::vector<float> getMinMaxRadiuses();
 
   LargeAgentsMapfProblem(LargeAgentsMapfProblem *P, Config _config_s, Config _config_g,
                        int _max_comp_time, int _max_timestep, std::vector<float> *_sizes);

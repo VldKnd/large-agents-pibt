@@ -58,8 +58,8 @@ int Plan::getPathCost(const int i) const
 {
   const int makespan = getMakespan();
   const Node* g = get(makespan, i);
-  int c = makespan;
-  while (c > 0 && get(c - 1, i) == g) --c;
+  int c = 0;
+  while (c < makespan && get(c, i) != g) c++;
   return c;
 }
 
@@ -201,7 +201,7 @@ bool Plan::validate(LargeAgentsMapfProblem* P) const
                 Node* v_j_t_1 = get(t - 1, j);
                 int v_j_pos_x = v_j_t->pos.x;
                 int v_j_pos_y = v_j_t->pos.y;
-                float s_j = P->getSize(j);
+                float s_j = ceil(P->getSize(j));
 
                 if (
                     (
@@ -216,7 +216,7 @@ bool Plan::validate(LargeAgentsMapfProblem* P) const
                         + ", " + std::to_string(i) + ", " + std::to_string(s_i) + ")"
                         + " with agent ("
                         + std::to_string(v_j_t->pos.x) + ", " + std::to_string(v_j_t->pos.y)
-                        + ", " + std::to_string(j)  + std::to_string(s_j) +")"
+                        + ", " + std::to_string(j)  + ", " + std::to_string(s_j) +")"
                         + ", t=" + std::to_string(t));
                     return false;
                 }

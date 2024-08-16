@@ -1,9 +1,0 @@
-map_file=64x64.map
-agents=2
-sizes=6., 6.
-seed=0
-random_problem=0
-max_timestep=2000
-max_comp_time=5000
-32,8,32,56
-32,56,32,8

@@ -1,0 +1,7 @@
+map_file=arena.map
+agents=40
+sizes_random_uniform=2.,3.
+seed=1
+random_problem=0
+max_timestep=2000
+max_comp_time=5000
