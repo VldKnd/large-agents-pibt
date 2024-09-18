@@ -496,20 +496,21 @@ Nodes LAPIBT::getNodesToAvoidInheritanceConflict(const Agent *child_agent, const
 
     Nodes border;
 
-    int deltaIncrement = std::max(1, int(std::floor((parent_agent_size+child_agent_size)/2)));
+    int deltaIncrement = std::max(1, int(std::floor((parent_agent_size+child_agent_size)/4)));
 
-    if (G->existNode(x + deltaIncrement, y - child_agent_size))
-        border.push_back(G->getNode(x + deltaIncrement, y - child_agent_size));
+    for (int delta = 0; delta < parent_agent_size + child_agent_size; delta += deltaIncrement) {
+        if (G->existNode(x + delta, y - child_agent_size))
+            border.push_back(G->getNode(x + delta, y - child_agent_size));
 
-    if (G->existNode(x + deltaIncrement, y + parent_agent_size))
-        border.push_back(G->getNode(x + deltaIncrement, y + parent_agent_size));
+        if (G->existNode(x + delta, y + parent_agent_size))
+            border.push_back(G->getNode(x + delta, y + parent_agent_size));
 
-    if (G->existNode(x - child_agent_size, y + deltaIncrement))
-        border.push_back(G->getNode(x - child_agent_size, y + deltaIncrement));
+        if (G->existNode(x - child_agent_size, y + delta))
+            border.push_back(G->getNode(x - child_agent_size, y + delta));
 
-    if (G->existNode(x + parent_agent_size, y + deltaIncrement))
-        border.push_back(G->getNode(x + parent_agent_size, y + deltaIncrement));
-
-
+        if (G->existNode(x + parent_agent_size, y + delta))
+            border.push_back(G->getNode(x + parent_agent_size, y + delta));
+    }
+    
     return border;
 }

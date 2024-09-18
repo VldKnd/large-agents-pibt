@@ -1,7 +1,7 @@
 map_file=maze-128-128-10.map
-agents=128
+agents=50
 sizes_random_uniform=0.1,3.
 random_problem=0
 max_timestep=2000
-max_comp_time=30000
+max_comp_time=60000
 well_formed=1
